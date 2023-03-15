@@ -228,7 +228,7 @@
     <property name="title">
      <string>Help</string>
     </property>
-    <addaction name="actionAbout_Log_Book"/>
+    <addaction name="actionAbout_PyLogBook"/>
     <addaction name="actionAbout_Qt"/>
    </widget>
    <widget class="QMenu" name="menuSettings">
@@ -327,9 +327,9 @@
     <string>Exit</string>
    </property>
   </action>
-  <action name="actionAbout_Log_Book">
+  <action name="actionAbout_PyLogBook">
    <property name="text">
-    <string>About Log Book</string>
+    <string>About PyLogBook</string>
    </property>
   </action>
   <action name="actionAbout_Qt">
