@@ -7,6 +7,9 @@ import logging
 from logging.handlers import RotatingFileHandler
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
 
+from SetPasswordDialog import SetPasswordDialog
+from database import Database
+
 kLogFile = 'PyLogBook.log'
 kAppName = 'PyLogBook'
 
@@ -21,8 +24,9 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
     super(PyLogBookWindow, self).__init__()
     uic.loadUi('PyLogBookWindow.ui', self)
 
-    self.databaseName = ''
+    self.databaseFileName = ''
     self.logDir = scriptDir
+    self.db = Database()
 
     QtCore.QTimer.singleShot(0, self.initialize)
 
@@ -30,36 +34,48 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
     logging.info("Starting application...")
 
   def getDatabasePath(self):
-    return os.path.join(self.getDatabaseDirectory(), self.databaseName)
+    return os.path.normpath(os.path.join(self.getDatabaseDirectory(), self.databaseFileName))
+
+  # This code was taken from another app, and doesn't apply to PyLogBook.  But
+  # I'm keeping this here because this might be used for setting the location
+  # of the preferences (INI) file.
+  # def getDatabaseDirectory(self):
+  #   procEnv = QtCore.QProcessEnvironment.systemEnvironment()
+
+  #   if platform.system() == 'Windows':
+  #     if procEnv.contains("APPDATA"):
+  #       # Indicates Windows platform
+  #       appDataPath = procEnv.value("APPDATA")
+
+  #       databasePath = "{}\\{}".format(appDataPath, kAppName)
+
+  #       #  Create directory if non - existent
+  #       dbDir = Path(databasePath)
+
+  #       if not dbDir.exists():
+  #         # Directory doesn't exist - create it.
+  #         if not dbDir.mkdir():
+  #           errMsg = "Could not create the data directory: {}".format(databasePath)
+  #           logging.error(f'[PyLogBookWindow.getDatabaseDirectory]: {errMsg}')
+  #           QtWidgets.QMessageBox.critical(self, kAppName, errMsg)
+  #           return ""
+
+  #       return databasePath
+  #     else:
+  #       logging.error('[PyLogBookWindow.getDatabasePath] Environment does not contain APPDATA')
+  #       return ''
+  #   else:
+  #     logging.error('[PyLogBookWindow.getDatabasePath] Only Windows supported at the moment.')
+  #     return ''
 
   def getDatabaseDirectory(self):
-    procEnv = QtCore.QProcessEnvironment.systemEnvironment()
+    return self.logDir
 
-    if platform.system() == 'Windows':
-      if procEnv.contains("APPDATA"):
-        # Indicates Windows platform
-        appDataPath = procEnv.value("APPDATA")
-
-        databasePath = "{}\\{}".format(appDataPath, kAppName)
-
-        #  Create directory if non - existent
-        dbDir = Path(databasePath)
-
-        if not dbDir.exists():
-          # Directory doesn't exist - create it.
-          if not dbDir.mkdir():
-            errMsg = "Could not create the data directory: {}".format(databasePath)
-            logging.error(f'[PyLogBookWindow.getDatabaseDirectory]: {errMsg}')
-            QtWidgets.QMessageBox.critical(self, kAppName, errMsg)
-            return ""
-
-        return databasePath
-      else:
-        logging.error('[PyLogBookWindow.getDatabasePath] Environment does not contain APPDATA')
-        return ''
+  def setAppTitle(self):
+    if len(self.databaseFileName) > 0:
+      self.setWindowTitle(f'PyLogBook - {self.getDatabasePath()}')
     else:
-      logging.error('[PyLogBookWindow.getDatabasePath] Only Windows supported at the moment.')
-      return ''
+      self.setWindowTitle('PyLogBook')
 
   @QtCore.pyqtSlot()
   def on_actionNew_Log_File_triggered(self):
@@ -70,10 +86,27 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
 
     if len(filepathTuple[0]) > 0:
       filepath = filepathTuple[0]
-      print(f'filepath: {filepath}')
-      self.databaseName = filepath
+      self.databaseFileName = os.path.basename(filepath)
       self.logDir = os.path.dirname(filepath)
-      print(f'log dir is now: {self.logDir}')
+
+      password = ''
+      dlg = SetPasswordDialog(self)
+      if dlg.exec() == QtWidgets.QDialog.Accepted:
+        password = dlg.getPassword()
+
+      self.db.open(filepath)
+
+      if len(password) > 0:
+        self.db.storePassword(password)
+
+      # TODO: Implement the following
+			# Create new entry for today
+			# ClearAllControls()
+			# EnableLogEntry(true)
+			# InitControls()
+			# SetInitialEntryToDisplay()
+
+      self.setAppTitle()
 
   @QtCore.pyqtSlot()
   def on_actionOpen_triggered(self):
@@ -89,19 +122,19 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
 
   @QtCore.pyqtSlot()
   def on_actionAbout_Qt_triggered(self):
-      QtWidgets.QMessageBox.aboutQt(self, 'About Qt')
+    QtWidgets.QMessageBox.aboutQt(self, 'About Qt')
 
   @QtCore.pyqtSlot()
   def on_actionAbout_PyLogBook_triggered(self):
-      QtWidgets.QMessageBox.about(self, "About PyLogBook", "PyLogBook by Jeff Geraci")
+    QtWidgets.QMessageBox.about(self, "About PyLogBook", "PyLogBook by Jeff Geraci")
 
   def closeEvent(self, event):
-      self.shutdownApp()
+    self.closeAppWindow()
 
-  def shutdownApp(self):
-      # self.db.close()
-      # self.saveSettings()
-    pass
+  def closeAppWindow(self):
+    logging.info('Closing app window...')
+    self.db.close()
+    # self.saveSettings()
 
 def shutdownApp():
   logging.info("Shutting down...")
@@ -122,13 +155,16 @@ def main():
     wind.show()
 
   except Exception as inst:
+    print(f'Shutdown exception: {inst}')
     logging.error(f'[main] Exception: type: {type(inst)}')
     logging.error(f'Exception args: {inst.args}')
     logging.error(f'Exception object: {inst}')
     sys.exit(1)
 
+  returnVal = app.exec_()
   shutdownApp()
-  sys.exit(app.exec_())
+
+  sys.exit(returnVal)
 
 # ---------------------------------------------------------------
 if __name__ == "__main__":
