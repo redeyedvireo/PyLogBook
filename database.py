@@ -241,3 +241,25 @@ class Database:
       hashedPassword = encrypter.hashedPassword()
       self.setGlobalValue('hashedPw', hashedPassword)
       self.dbPassword = plainTextPassword
+
+  def getLogIdForDate(self, date):
+    return date.toJulianDay()
+
+  def getLogEntryDate(self, entryId):
+    return QtCore.QDate.fromJulianDay(entryId)
+
+  def entryExists(self, entryId):
+    queryObj = QtSql.QSqlQuery(self.db)
+    queryStr = "select lastmodifieddate from logs where entryid=?"
+    queryObj.prepare(queryStr)
+    queryObj.addBindValue(entryId)
+
+    queryObj.exec_()
+
+    # Check for errors
+    sqlErr = queryObj.lastError()
+    if sqlErr.type() != QtSql.QSqlError.NoError:
+        self.reportError("Error when attempting to determine if an entry exists: {}".format(sqlErr.text()))
+        return False
+
+    return queryObj.next()

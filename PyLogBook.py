@@ -10,6 +10,8 @@ from PyQt5 import QtCore, QtGui, QtWidgets, uic
 from SetPasswordDialog import SetPasswordDialog
 from database import Database
 
+from constants import kTempItemId, errNoDateFound
+
 kLogFile = 'PyLogBook.log'
 kAppName = 'PyLogBook'
 
@@ -27,6 +29,10 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
     self.databaseFileName = ''
     self.logDir = scriptDir
     self.db = Database()
+
+    self.currentDate = QtCore.QDate.currentDate()
+    self.currentEntryId = kTempItemId
+    self.tempNewLog = ''
 
     QtCore.QTimer.singleShot(0, self.initialize)
 
@@ -77,6 +83,96 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
     else:
       self.setWindowTitle('PyLogBook')
 
+  def clearAllControls(self):
+    self.logEntryTree.clear()
+    self.curMonth.clear()
+    self.logBrowser.clear()
+    self.logEdit.clear()
+    self.tagsEdit.clear()
+
+  def enableLogEntry(self, enable):
+    self.submitButton.setEnabled(enable)
+    self.addendumButton.setEnabled(enable)
+    self.logEdit.setEnabled(enable)
+    self.tagsEdit.setEnabled(enable)
+
+  def initControls(self):
+    pass
+    # TODO: Implement this
+    # dateList = self.db.getEntryDates()
+    # self.curMonth.setLogDates(dateList)
+    # self.logEntryTree.setLogDates(dateList)
+
+  def setInitialEntryToDisplay(self):
+    # Display today's date to start with.  If there is no entry for
+    # today, create the new log, and set the display tab to the edit tab
+
+    entryId = kTempItemId
+    self.currentDate = QtCore.QDate.currentDate()
+
+    if self.db.entryExists(self.currentDate):
+      entryId = self.db.getLogIdForDate(self.currentDate)
+
+    self.currentEntryId = entryId
+
+    if self.currentEntryId == kTempItemId:
+      # This is the first item entered - Connect database to log browser and log tree
+      # TODO: This should probably be done in the constructor
+      # self.logBrowser.setDb(self.db)
+      # self.logEntryTree.setDb(self.db)
+      self.createNewLogEntry(self.currentDate)
+
+      # TODO: Hide the "Add Addendum" button (need a function that shows/hides appropriate buttons)
+    else:
+      # Fetch the entry
+      self.setDateCurrent(self.db.getLogEntryDate(entryId), True)
+
+  def createNewLogEntry(self, date):
+    self.logEdit.clear()
+    self.tagsEdit.clear()
+
+    # Create the log entry
+    self.tempNewLog = ''
+
+    self.currentEntryId = kTempItemId
+    self.currentDate = date
+
+    # TODO: Implement this
+    fontSize = 10  # TODO: m_prefs.GetIntPref("editor-defaulttextsize");
+
+    if fontSize <= 0:
+      fontSize = 10
+
+    fontFamily = 'Arial'    # TODO: m_prefs.GetStringPref("editor-defaultfontfamily")
+    self.logEdit.newDocument(fontFamily, fontSize)
+
+    # TODO: Implement this
+    # self.logDateLabel.setText(date.toString(Qt::SystemLocaleLongDate))
+    # self.lastModificationDateLabel.setText(QDate::currentDate().toString(Qt::SystemLocaleLongDate))
+    # self.numChangesLabel.setText("0")
+
+    # self.logEntryTree.AddTemporaryDay(m_currentDate, m_currentEntryId)
+
+  def setDateCurrent(self, inDate, scrollLogBrowser):
+    # TODO: self.removeTemporaryDay()
+
+    # Scroll to this date in the log tree
+    self.logEntryTree.setCurrentDate(inDate)
+
+    # Scroll to this date in the log browser, if requested
+    if scrollLogBrowser:
+      self.logBrowser.scrollToItem(inDate)
+
+    self.curMonth.setCurrentDate(inDate)
+
+    entryId = self.db.getLogIdForDate(inDate)
+
+    if entryId != errNoDateFound and entryId != kTempItemId:
+      self.currentEntryId = entryId
+      self.currentDate = inDate
+
+      self.DisplayLog(entryId)
+
   @QtCore.pyqtSlot()
   def on_actionNew_Log_File_triggered(self):
     filepathTuple = QtWidgets.QFileDialog.getSaveFileName(self,
@@ -99,12 +195,11 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
       if len(password) > 0:
         self.db.storePassword(password)
 
-      # TODO: Implement the following
-			# Create new entry for today
-			# ClearAllControls()
-			# EnableLogEntry(true)
-			# InitControls()
-			# SetInitialEntryToDisplay()
+      # Create new entry for today
+      self.clearAllControls()
+      self.enableLogEntry(True)
+      self.initControls()
+      self.setInitialEntryToDisplay()
 
       self.setAppTitle()
 

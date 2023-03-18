@@ -32,6 +32,10 @@ class CColorButton(QtWidgets.QToolButton):
     self.m_hasColor = True
     self.update()
 
+  def setNoColor(self):
+    self.m_hasColor = False
+    self.update()
+
   def hasColor(self):
     return self.m_hasColor
 
