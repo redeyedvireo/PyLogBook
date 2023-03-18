@@ -1,5 +1,5 @@
 <RCC>
-    <qresource prefix="/LogBook">
+    <qresource prefix="/PyLogBook">
         <file>Resources/Text Background.png</file>
         <file>Resources/Text Foreground.png</file>
         <file>Resources/No Color.png</file>
