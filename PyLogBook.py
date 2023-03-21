@@ -97,11 +97,9 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
     self.tagsEdit.setEnabled(enable)
 
   def initControls(self):
-    pass
-    # TODO: Implement this
-    # dateList = self.db.getEntryDates()
-    # self.curMonth.setLogDates(dateList)
-    # self.logEntryTree.setLogDates(dateList)
+    dateList = self.db.getEntryDates()
+    self.curMonth.setLogDates(dateList)
+    self.logEntryTree.setLogDates(dateList)
 
   def setInitialEntryToDisplay(self):
     # Display today's date to start with.  If there is no entry for

@@ -3,6 +3,7 @@ from PyQt5 import QtCore, QtSql
 from pathlib import Path
 
 from encrypter import Encrypter
+from utility import julianDayToDate
 
 
 # Global value data type constants
@@ -248,6 +249,30 @@ class Database:
   def getLogEntryDate(self, entryId):
     return QtCore.QDate.fromJulianDay(entryId)
 
+  def getEntryDates(self):
+    """ Returns a list of dates for which log entries exist. """
+    queryObj = QtSql.QSqlQuery(self.db)
+    queryStr = "select entryid from logs"
+    queryObj.prepare(queryStr)
+
+    queryObj.exec_()
+
+    # Check for errors
+    sqlErr = queryObj.lastError()
+    if sqlErr.type() != QtSql.QSqlError.NoError:
+      self.reportError("SQLite error in GetEntryDates: {}".format(sqlErr.text()))
+      return []
+
+    entryField = queryObj.record().indexOf('entryid')
+    dateList = []
+
+    while queryObj.next():
+      julianDay = int(queryObj.value(entryField))
+      date = julianDayToDate(julianDay)
+      dateList.append(date)
+
+    return dateList
+
   def entryExists(self, entryId):
     queryObj = QtSql.QSqlQuery(self.db)
     queryStr = "select lastmodifieddate from logs where entryid=?"
@@ -259,7 +284,7 @@ class Database:
     # Check for errors
     sqlErr = queryObj.lastError()
     if sqlErr.type() != QtSql.QSqlError.NoError:
-        self.reportError("Error when attempting to determine if an entry exists: {}".format(sqlErr.text()))
-        return False
+      self.reportError("Error when attempting to determine if an entry exists: {}".format(sqlErr.text()))
+      return False
 
     return queryObj.next()
