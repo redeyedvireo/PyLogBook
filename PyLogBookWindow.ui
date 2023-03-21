@@ -260,7 +260,7 @@
       <number>3</number>
      </property>
      <item>
-      <widget class="QTreeWidget" name="logEntryTree">
+      <widget class="CLogEntryTree" name="logEntryTree">
        <column>
         <property name="text">
          <string notr="true">1</string>
@@ -375,6 +375,11 @@
    <extends>QWidget</extends>
    <header>logbrowser</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>CLogEntryTree</class>
+   <extends>QTreeWidget</extends>
+   <header>log_entry_tree</header>
   </customwidget>
  </customwidgets>
  <resources>
