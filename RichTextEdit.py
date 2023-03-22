@@ -23,6 +23,18 @@ class RichTextEditWidget(QtWidgets.QWidget):
     # Disable style button at first.  It will be enabled whenever there is a selection.
     self.styleButton.setEnabled(False)
 
+    self.styleMenu = QtWidgets.QMenu()
+
+    self.initStyleButton()
+
+    # Connect signals
+    self.textColorButton.colorChangedSignal.connect(self.onTextColorChanged)
+    self.textColorButton.noColorSignal.connect(self.onTextColorNoColor)
+    self.textBackgroundButton.colorChangedSignal.connect(self.onTextBackgroundChanged)
+    self.textBackgroundButton.noColorSignal.connect(self.onBackgroundNoColor)
+    self.textEdit.selectionChanged.connect(self.onSelectionChanged)
+    self.styleButton.triggered.connect(self.onStyleButtonTriggered)
+
   def populatePointSizesCombo(self):
     fontDatabase = QtGui.QFontDatabase()
     curFontFamily = self.fontCombo.currentText()
@@ -32,6 +44,31 @@ class RichTextEditWidget(QtWidgets.QWidget):
     for curFontSize in fontSizeList:
       fontSizeString = f'{curFontSize}'
       self.sizeCombo.addItem(fontSizeString)
+
+  def initStyleButton(self):
+    # TODO: Need to get the settings from the user's prefs file.  This will
+    # probably be read at startup.
+
+    # TODO: Should add a way for the user to import/export the style settings.
+    self.styleMenu.clear()
+
+    # Add some hard-coded styles for debugging, but eventually, all styles will come from the styles.xml file.
+    # NEW! The action will have the style ID stored as its data item.  (In the C++ version, a signal mapper was used,
+    #      but the Qt docs say that signal mapper is obsolete.)
+
+    debugStyles = [ ('Style #1', 11),
+                    ('Style Two', 23),
+                    ('Style The Third', 88)
+                  ]
+
+    for styleTuple in debugStyles:
+      styleName = styleTuple[0]
+      styleId = styleTuple[1]
+
+      action = self.styleMenu.addAction(styleName)
+      action.setData(styleId)
+
+    self.styleButton.setMenu(self.styleMenu)
 
   def clear(self):
     self.textEdit.clear()
@@ -141,3 +178,64 @@ class RichTextEditWidget(QtWidgets.QWidget):
       self.textBackgroundButton.setColor(bgBrush.color())
     else:
       self.textBackgroundButton.setNoColor()
+
+  # Slots
+
+  @QtCore.pyqtSlot(QtGui.QColor)
+  def onTextColorChanged(self, color):
+    selectionCursor = self.textEdit.textCursor()
+
+    tempCharFormat = QtGui.QTextCharFormat()
+    tempCharFormat.setForeground(QtGui.QBrush(color))
+    selectionCursor.mergeCharFormat(tempCharFormat)
+
+    self.textEdit.setTextCursor(selectionCursor)
+
+  def onTextColorNoColor(self):
+    selectionCursor = self.textEdit.textCursor()
+    selectionFormat = selectionCursor.charFormat()
+
+    # NOTE: This approach will cause all text in the selection to take on
+    # all characteristics of the selectionFormat.  It has the effect of
+    # removing formatting changes within the block.  Unfortunately,
+    # mergeCharFormat does not work when clearing a property.
+    selectionFormat.clearForeground()
+    selectionCursor.setCharFormat(selectionFormat)
+
+    self.textEdit.setTextCursor(selectionCursor)
+
+  @QtCore.pyqtSlot(QtGui.QColor)
+  def onTextBackgroundChanged(self, color):
+    selectionCursor = self.textEdit.textCursor()
+
+    tempCharFormat = QtGui.QTextCharFormat()
+    tempCharFormat.setBackground(QtGui.QBrush(color))
+    selectionCursor.mergeCharFormat(tempCharFormat)
+
+    self.textEdit.setTextCursor(selectionCursor)
+
+  @QtCore.pyqtSlot()
+  def onBackgroundNoColor(self):
+    selectionCursor = self.textEdit.textCursor()
+    selectionFormat = selectionCursor.charFormat()
+
+    # NOTE: This approach will cause all text in the selection to take on
+    # all characteristics of the selectionFormat.  It has the effect of
+    # removing formatting changes within the block.  Unfortunately,
+    # mergeCharFormat does not work when clearing a property.
+    selectionFormat.clearBackground()
+    selectionCursor.setCharFormat(selectionFormat)
+
+    self.textEdit.setTextCursor(selectionCursor)
+
+  @QtCore.pyqtSlot()
+  def onSelectionChanged(self):
+    selectionCursor = self.textEdit.textCursor()
+    self.styleButton.setEnabled(selectionCursor.hasSelection())
+
+  @QtCore.pyqtSlot(QtWidgets.QAction)
+  def onStyleButtonTriggered(self, action):
+    """ A 'triggered' event happens when the user changes
+        the current item in the style button. """
+    styleId = action.data()
+    print(f'Style button triggered.  Style: {styleId}')
