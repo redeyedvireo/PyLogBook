@@ -9,3 +9,7 @@ class CLogEntryTree(QtWidgets.QTreeWidget):
   def setLogDates(self, dateList):
     # TODO: Implement
     pass
+
+  def makeTemporaryEntryPermanent(self, date, entryId):
+    # TODO: Implement
+    pass

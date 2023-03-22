@@ -2,6 +2,7 @@ import sys
 import os
 import os.path
 import platform
+import datetime
 from pathlib import Path
 import logging
 from logging.handlers import RotatingFileHandler
@@ -30,9 +31,11 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
     self.logDir = scriptDir
     self.db = Database()
 
-    self.currentDate = QtCore.QDate.currentDate()
+    self.currentDate = datetime.date.today()
     self.currentEntryId = kTempItemId
     self.tempNewLog = ''
+
+    self.submitButton.clicked.connect(self.onSubmitButtonClicked)
 
     QtCore.QTimer.singleShot(0, self.initialize)
 
@@ -106,7 +109,7 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
     # today, create the new log, and set the display tab to the edit tab
 
     entryId = kTempItemId
-    self.currentDate = QtCore.QDate.currentDate()
+    self.currentDate = datetime.date.today()
 
     if self.db.entryExists(self.currentDate):
       entryId = self.db.getLogIdForDate(self.currentDate)
@@ -220,6 +223,33 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
   @QtCore.pyqtSlot()
   def on_actionAbout_PyLogBook_triggered(self):
     QtWidgets.QMessageBox.about(self, "About PyLogBook", "PyLogBook by Jeff Geraci")
+
+  @QtCore.pyqtSlot()
+  def onSubmitButtonClicked(self):
+    print('Save entry clicked')
+    if self.currentEntryId == kTempItemId:
+      entryId = self.db.addNewLog(self.currentDate, self.logEdit.toHtml(), self.tagsEdit.text(),
+                                  datetime.datetime.now())
+
+      if entryId != kTempItemId:
+        # Update the UI
+
+        # Remove italic from the tree entry
+        self.logEntryTree.makeTemporaryEntryPermanent(self.currentDate, entryId)
+
+        # Add entry to the calendar widget
+        self.curMonth.addLogDate(self.currentDate)
+
+        # Add entry to the log browser
+        self.logBrowser.addDate(self.currentDate)
+
+        self.logEdit.setDocumentModified(False)
+
+        # Set current entry
+        self.currentEntryId = entryId
+    else:
+      # TODO: Existing item - update it
+      pass
 
   def closeEvent(self, event):
     self.closeAppWindow()

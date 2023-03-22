@@ -3,7 +3,9 @@ from PyQt5 import QtCore, QtSql
 from pathlib import Path
 
 from encrypter import Encrypter
-from utility import julianDayToDate
+from utility import dateToJulianDay, julianDayToDate
+
+from constants import kTempItemId
 
 
 # Global value data type constants
@@ -288,3 +290,31 @@ class Database:
       return False
 
     return queryObj.next()
+
+  def addNewLog(self, entryDate, contentData, tags, lastModifiedDateTime):
+    queryObj = QtSql.QSqlQuery(self.db)
+
+    entryId = dateToJulianDay(entryDate)
+
+    # TODO: If password protected, encrypt the data
+    encryptedData = contentData
+
+    queryStr = 'insert into logs (entryid, lastModifiedDate, numModifications, contents, tags) values (?, ?, ?, ?, ?)'
+
+    queryObj.prepare(queryStr)
+
+    queryObj.addBindValue(entryId)
+    queryObj.addBindValue(lastModifiedDateTime.timestamp())
+    queryObj.addBindValue(1)    # Num modifications (always 1 for a new log)
+    queryObj.addBindValue(encryptedData)
+    queryObj.addBindValue(tags)
+
+    queryObj.exec_()
+
+    # Check for errors
+    sqlErr = queryObj.lastError()
+    if sqlErr.type() != QtSql.QSqlError.NoError:
+      self.reportError("Error when attempting to store a new log entry: {}".format(sqlErr.text()))
+      return kTempItemId
+
+    return entryId

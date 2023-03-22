@@ -8,3 +8,7 @@ class LogBrowser(QtWidgets.QWidget):
   def clear(self):
     # TODO: Implement
     pass
+
+  def addDate(self, date):
+    # TODO: Implement
+    pass

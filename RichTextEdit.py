@@ -80,13 +80,16 @@ class RichTextEditWidget(QtWidgets.QWidget):
     # Set global font size
     self.setGlobalFont(fontFamily, fontSize)
 
-  def setDocumentModified(self, modified):
-    doc = self.textEdit.document()
-    doc.setModified(modified)
+  def toHtml(self):
+    return self.textEdit.document().toHtml()
 
   def isModified(self):
     doc = self.textEdit.document()
     return doc.isModified()
+
+  def setDocumentModified(self, modified):
+    doc = self.textEdit.document()
+    doc.setModified(modified)
 
   def setGlobalFont(self, fontFamily, fontSize):
     selectionCursor = self.textEdit.textCursor()

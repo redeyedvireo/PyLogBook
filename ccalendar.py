@@ -12,3 +12,7 @@ class CCalendar(QtWidgets.QCalendarWidget):
   def setLogDates(self, dateList):
     # TODO: Implement
     pass
+
+  def addLogDate(self, date):
+    # TODO: Implement
+    pass
