@@ -1,8 +1,10 @@
 import logging
 from PyQt5 import QtCore, QtSql
 from pathlib import Path
+import datetime
 
 from encrypter import Encrypter
+from log_entry import LogEntry
 from utility import dateToJulianDay, julianDayToDate
 
 from constants import kTempItemId
@@ -18,8 +20,13 @@ class Database:
     super(Database, self).__init__()
     self.db = None
     self.dbPassword = ''
+    self.encrypter = Encrypter()
 
-  def open(self, pathName):
+  def openDatabase(self, pathName) -> bool:
+    self.encrypter.clear()
+    return self.open(pathName)
+
+  def open(self, pathName) -> bool:
     self.db = QtSql.QSqlDatabase.addDatabase("QSQLITE")
     p = Path(pathName)
     dbExists = p.is_file()
@@ -34,8 +41,20 @@ class Database:
         # Create the database, and all tables
         self.createNewDatabase()
         logging.info(f'Created new database at: {pathName}')
+      return True
     else:
       logging.error("Could not open database")
+      return False
+
+  def isDatabaseOpen(self):
+    if self.db is not None:
+      return self.db.isOpen()
+    else:
+      return False
+
+  def closeDatabase(self):
+    self.close()
+    self.encrypter.clear()
 
   def close(self):
     if self.db is not None:
@@ -240,16 +259,16 @@ class Database:
 
   def storePassword(self, plainTextPassword):
     if len(plainTextPassword) > 0:
-      encrypter = Encrypter(plainTextPassword)
-      hashedPassword = encrypter.hashedPassword()
+      self.encrypter.setPassword(plainTextPassword)
+      hashedPassword = self.encrypter.hashedPassword()
       self.setGlobalValue('hashedPw', hashedPassword)
       self.dbPassword = plainTextPassword
 
-  def getLogIdForDate(self, date):
-    return date.toJulianDay()
+  def getLogIdForDate(self, date: datetime.date) -> int:
+    return dateToJulianDay(date)
 
-  def getLogEntryDate(self, entryId):
-    return QtCore.QDate.fromJulianDay(entryId)
+  def getLogEntryDate(self, entryId: int) -> datetime.date:
+    return julianDayToDate(entryId)
 
   def getEntryDates(self):
     """ Returns a list of dates for which log entries exist. """
@@ -275,7 +294,11 @@ class Database:
 
     return dateList
 
-  def entryExists(self, entryId):
+  def entryExistsForDate(self, date: datetime.date) -> bool:
+    entryId = dateToJulianDay(date)
+    return self.entryExists(entryId)
+
+  def entryExists(self, entryId: int) -> bool:
     queryObj = QtSql.QSqlQuery(self.db)
     queryStr = "select lastmodifieddate from logs where entryid=?"
     queryObj.prepare(queryStr)
@@ -291,23 +314,28 @@ class Database:
 
     return queryObj.next()
 
-  def addNewLog(self, entryDate, contentData, tags, lastModifiedDateTime):
+  def addNewLog(self, entryDate: datetime.date, logEntry: LogEntry):
     queryObj = QtSql.QSqlQuery(self.db)
 
     entryId = dateToJulianDay(entryDate)
 
+    lastModifiedDateTimeTimestamp = logEntry.lastModifiedDateTimeAsTimestamp()
+
+    if lastModifiedDateTimeTimestamp is None:
+      lastModifiedDateTimeTimestamp = datetime.datetime.now(datetime.timezone.utc).timestamp()
+
     # TODO: If password protected, encrypt the data
-    encryptedData = contentData
+    encryptedData = logEntry.content
 
     queryStr = 'insert into logs (entryid, lastModifiedDate, numModifications, contents, tags) values (?, ?, ?, ?, ?)'
 
     queryObj.prepare(queryStr)
 
     queryObj.addBindValue(entryId)
-    queryObj.addBindValue(lastModifiedDateTime.timestamp())
+    queryObj.addBindValue(lastModifiedDateTimeTimestamp)
     queryObj.addBindValue(1)    # Num modifications (always 1 for a new log)
     queryObj.addBindValue(encryptedData)
-    queryObj.addBindValue(tags)
+    queryObj.addBindValue(logEntry.tagsAsString())
 
     queryObj.exec_()
 
@@ -318,3 +346,37 @@ class Database:
       return kTempItemId
 
     return entryId
+
+  def getLogEntry(self, entryId: int) -> LogEntry | None:
+    queryObj = QtSql.QSqlQuery(self.db)
+    queryObj.prepare("select contents, tags, lastmodifieddate, nummodifications from logs where entryid=?")
+
+    queryObj.addBindValue(entryId)
+
+    queryObj.exec_()
+
+    # Check for errors
+    sqlErr = queryObj.lastError()
+    if sqlErr.type() != QtSql.QSqlError.NoError:
+      self.reportError("Error when attempting to retrieve a log entry: {}".format(sqlErr.text()))
+      return None
+
+    if queryObj.next():
+      contentData = queryObj.record().value(0)
+      tagsData = queryObj.record().value(1)
+      lastModifiedDate = datetime.datetime.fromtimestamp(queryObj.record().value(2), datetime.timezone.utc)
+      numModifications = queryObj.record().value(3)
+
+      # TODO: If encrypted, decrypt the contentsData
+
+      logEntry = LogEntry()
+      logEntry.entryId = entryId
+      logEntry.content = contentData
+      logEntry.setTagsFromString(tagsData)
+      logEntry.lastModifiedDateTime = lastModifiedDate
+      logEntry.numModifications = numModifications
+
+      return logEntry
+    else:
+      # No entry found
+      return None

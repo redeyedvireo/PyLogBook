@@ -91,6 +91,9 @@ class RichTextEditWidget(QtWidgets.QWidget):
     doc = self.textEdit.document()
     doc.setModified(modified)
 
+  def setDocumentText(self, content: str) -> None:
+    self.textEdit.setHtml(content)
+
   def setGlobalFont(self, fontFamily, fontSize):
     selectionCursor = self.textEdit.textCursor()
 

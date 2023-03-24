@@ -12,6 +12,8 @@ from SetPasswordDialog import SetPasswordDialog
 from database import Database
 
 from constants import kTempItemId, errNoDateFound
+from log_entry import LogEntry
+from utility import formatDate, formatDateTime, julianDayToDate
 
 kLogFile = 'PyLogBook.log'
 kAppName = 'PyLogBook'
@@ -42,7 +44,24 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
   def initialize(self):
     logging.info("Starting application...")
 
-  def getDatabasePath(self):
+  def openLogFile(self) -> bool:
+    if len(self.getDatabasePath()) > 0:
+      if self.db.openDatabase(self.getDatabasePath()):
+        if self.db.isPasswordProtected():
+          # TODO: Deal with passwords
+          pass
+
+        self.initControls()
+        self.setInitialEntryToDisplay()
+        self.setInitialBrowserEntries()
+        self.setAppTitle()
+        return True
+      else:
+        return False
+    else:
+      return False
+
+  def getDatabasePath(self) -> str:
     return os.path.normpath(os.path.join(self.getDatabaseDirectory(), self.databaseFileName))
 
   # This code was taken from another app, and doesn't apply to PyLogBook.  But
@@ -104,6 +123,53 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
     self.curMonth.setLogDates(dateList)
     self.logEntryTree.setLogDates(dateList)
 
+  def displayLog(self, entryId: int):
+    if entryId != kTempItemId:
+      if self.db.entryExists(entryId):
+        logEntry = self.db.getLogEntry(entryId)
+
+        if logEntry is not None:
+          self.logEdit.setDocumentText(logEntry.content)
+          self.tagsEdit.setText(logEntry.tagsAsString())
+          self.logDateLabel.setText(logEntry.entryDateAsString)
+          self.lastModificationDateLabel.setText(logEntry.lastModifiedDateAsFormattedString())
+          self.numChangesLabel.setText(logEntry.numModificationsAsString)
+
+          self.currentEntryId = entryId
+
+          self.deleteButton.setEnabled(True)
+        else:
+          # TODO: Need error dialog indicating the entry was not found in the database
+          logging.error(f'[PyLogBookWindow.displayLog] Entry {entryId} not found in database')
+      else:
+        # The entry does not exist.  It is probably today's entry, which has not
+        # been stored in the database yet.
+        entryDate = julianDayToDate(entryId)
+
+        if entryDate == datetime.date.today():
+          self.tempNewLog = ''
+
+          fontSize = 10   # TODO: This should come from prefs
+
+          if fontSize < 0:
+            fontSize = 10
+
+          # TODO: Need to read font family from prefs
+          self.logEdit.newDocument('Arial', fontSize)
+
+          self.tagsEdit.setText('')
+          self.logDateLabel.setText(formatDate(entryDate))
+          self.lastModificationDateLabel.setText('???')    # TODO: Not sure what to put here
+          self.numChangesLabel.setText('0')
+
+          self.currentEntryId = entryId
+
+        else:
+          logging.error(f'[PyLogBookWindow.displayLog] Error: entryDate does not equal today')
+          return
+
+        self.deleteButton.setEnabled(False)
+
   def setInitialEntryToDisplay(self):
     # Display today's date to start with.  If there is no entry for
     # today, create the new log, and set the display tab to the edit tab
@@ -111,7 +177,7 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
     entryId = kTempItemId
     self.currentDate = datetime.date.today()
 
-    if self.db.entryExists(self.currentDate):
+    if self.db.entryExistsForDate(self.currentDate):
       entryId = self.db.getLogIdForDate(self.currentDate)
 
     self.currentEntryId = entryId
@@ -127,6 +193,10 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
     else:
       # Fetch the entry
       self.setDateCurrent(self.db.getLogEntryDate(entryId), True)
+
+  def setInitialBrowserEntries(self):
+    # TODO: Implement
+    pass
 
   def createNewLogEntry(self, date):
     self.logEdit.clear()
@@ -172,7 +242,7 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
       self.currentEntryId = entryId
       self.currentDate = inDate
 
-      self.DisplayLog(entryId)
+      self.displayLog(entryId)
 
   @QtCore.pyqtSlot()
   def on_actionNew_Log_File_triggered(self):
@@ -206,7 +276,25 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
 
   @QtCore.pyqtSlot()
   def on_actionOpen_triggered(self):
-    QtWidgets.QMessageBox.about(self, "Open Log File", "Open log file triggered")
+    filepathTuple = QtWidgets.QFileDialog.getOpenFileName(self,
+                                                          "LogBook - Open Log File",
+                                                          self.logDir,
+                                                          'Log files (*.db)')
+
+    if len(filepathTuple[0]) > 0:
+      if self.db.isDatabaseOpen():
+        self.db.closeDatabase()
+        self.clearAllControls()
+
+      if self.openLogFile():
+        dbFilePath = filepathTuple[0]
+
+        self.logDir = os.path.dirname(dbFilePath)
+        self.databaseFileName = os.path.basename(dbFilePath)
+
+        self.enableLogEntry(True)
+        self.initControls()
+        self.setInitialEntryToDisplay()
 
   @QtCore.pyqtSlot()
   def on_actionClose_triggered(self):
@@ -228,8 +316,8 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
   def onSubmitButtonClicked(self):
     print('Save entry clicked')
     if self.currentEntryId == kTempItemId:
-      entryId = self.db.addNewLog(self.currentDate, self.logEdit.toHtml(), self.tagsEdit.text(),
-                                  datetime.datetime.now())
+      logEntry = LogEntry.fromData(0, self.logEdit.toHtml(), self.tagsEdit.text(), datetime.datetime.now(datetime.timezone.utc))
+      entryId = self.db.addNewLog(self.currentDate, logEntry)
 
       if entryId != kTempItemId:
         # Update the UI
