@@ -13,7 +13,7 @@ from database import Database
 
 from constants import kTempItemId, errNoDateFound
 from log_entry import LogEntry
-from utility import formatDate, formatDateTime, julianDayToDate
+from utility import dateToJulianDay, formatDate, formatDateTime, julianDayToDate
 
 kLogFile = 'PyLogBook.log'
 kAppName = 'PyLogBook'
@@ -34,10 +34,12 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
     self.db = Database()
 
     self.currentDate = datetime.date.today()
-    self.currentEntryId = kTempItemId
+    self.currentEntryId = dateToJulianDay(self.currentDate)
     self.tempNewLog = ''
 
     self.submitButton.clicked.connect(self.onSubmitButtonClicked)
+    self.curMonth.dateSelectedSignal.connect(self.onDisplayLogEntryScrollBrowser)
+    self.logEdit.logTextChangedSignal.connect(self.onLogTextChanged)
 
     QtCore.QTimer.singleShot(0, self.initialize)
 
@@ -131,44 +133,40 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
         if logEntry is not None:
           self.logEdit.setDocumentText(logEntry.content)
           self.tagsEdit.setText(logEntry.tagsAsString())
-          self.logDateLabel.setText(logEntry.entryDateAsString)
+          self.logDateLabel.setText(logEntry.entryDateAsString())
           self.lastModificationDateLabel.setText(logEntry.lastModifiedDateAsFormattedString())
-          self.numChangesLabel.setText(logEntry.numModificationsAsString)
+          self.numChangesLabel.setText(logEntry.numModificationsAsString())
 
           self.currentEntryId = entryId
 
           self.deleteButton.setEnabled(True)
+          self.submitButton.setEnabled(False)
         else:
           # TODO: Need error dialog indicating the entry was not found in the database
           logging.error(f'[PyLogBookWindow.displayLog] Entry {entryId} not found in database')
       else:
-        # The entry does not exist.  It is probably today's entry, which has not
-        # been stored in the database yet.
+        # The entry does not exist.  The user is allowed to create entries for any day.
         entryDate = julianDayToDate(entryId)
 
-        if entryDate == datetime.date.today():
-          self.tempNewLog = ''
+        self.tempNewLog = ''
 
-          fontSize = 10   # TODO: This should come from prefs
+        fontSize = 10   # TODO: This should come from prefs
 
-          if fontSize < 0:
-            fontSize = 10
+        if fontSize < 0:
+          fontSize = 10
 
-          # TODO: Need to read font family from prefs
-          self.logEdit.newDocument('Arial', fontSize)
+        # TODO: Need to read font family from prefs
+        self.logEdit.newDocument('Arial', fontSize)
 
-          self.tagsEdit.setText('')
-          self.logDateLabel.setText(formatDate(entryDate))
-          self.lastModificationDateLabel.setText('???')    # TODO: Not sure what to put here
-          self.numChangesLabel.setText('0')
+        self.tagsEdit.setText('')
+        self.logDateLabel.setText(formatDate(entryDate))
+        self.lastModificationDateLabel.setText(formatDateTime(datetime.datetime.now(datetime.timezone.utc)))
+        self.numChangesLabel.setText('0')
 
-          self.currentEntryId = entryId
-
-        else:
-          logging.error(f'[PyLogBookWindow.displayLog] Error: entryDate does not equal today')
-          return
+        self.currentEntryId = entryId
 
         self.deleteButton.setEnabled(False)
+        self.submitButton.setEnabled(True)
 
   def setInitialEntryToDisplay(self):
     # Display today's date to start with.  If there is no entry for
@@ -205,8 +203,8 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
     # Create the log entry
     self.tempNewLog = ''
 
-    self.currentEntryId = kTempItemId
     self.currentDate = date
+    self.currentEntryId = dateToJulianDay(date)
 
     # TODO: Implement this
     fontSize = 10  # TODO: m_prefs.GetIntPref("editor-defaulttextsize");
@@ -224,7 +222,7 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
 
     # self.logEntryTree.AddTemporaryDay(m_currentDate, m_currentEntryId)
 
-  def setDateCurrent(self, inDate, scrollLogBrowser):
+  def setDateCurrent(self, inDate: datetime.date, scrollLogBrowser: bool):
     # TODO: self.removeTemporaryDay()
 
     # Scroll to this date in the log tree
@@ -286,11 +284,12 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
         self.db.closeDatabase()
         self.clearAllControls()
 
-      if self.openLogFile():
-        dbFilePath = filepathTuple[0]
+      dbFilePath = filepathTuple[0]
 
-        self.logDir = os.path.dirname(dbFilePath)
-        self.databaseFileName = os.path.basename(dbFilePath)
+      self.logDir = os.path.dirname(dbFilePath)
+      self.databaseFileName = os.path.basename(dbFilePath)
+
+      if self.openLogFile():
 
         self.enableLogEntry(True)
         self.initControls()
@@ -313,9 +312,22 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
     QtWidgets.QMessageBox.about(self, "About PyLogBook", "PyLogBook by Jeff Geraci")
 
   @QtCore.pyqtSlot()
+  def onLogTextChanged(self):
+    self.submitButton.setEnabled(True)
+
+  @QtCore.pyqtSlot()
   def onSubmitButtonClicked(self):
-    print('Save entry clicked')
-    if self.currentEntryId == kTempItemId:
+    if self.db.entryExists(self.currentEntryId):
+      success = self.db.updateLog(self.currentEntryId, self.logEdit.toHtml(), self.tagsEdit.text())
+      if not success:
+        # TODO: Show error dialog
+        print('Log update unsuccessful - show error dialog')
+
+      # Update the UI
+      self.logEdit.setDocumentModified(False)
+      self.submitButton.setEnabled(False)
+    else:
+      # New entry - create it
       logEntry = LogEntry.fromData(0, self.logEdit.toHtml(), self.tagsEdit.text(), datetime.datetime.now(datetime.timezone.utc))
       entryId = self.db.addNewLog(self.currentDate, logEntry)
 
@@ -335,9 +347,20 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
 
         # Set current entry
         self.currentEntryId = entryId
-    else:
-      # TODO: Existing item - update it
-      pass
+
+
+  def onDisplayLogEntryScrollBrowser(self, date: datetime.date) -> None:
+    entryId = dateToJulianDay(date)
+    self.onDisplayLogEntry(entryId, False)
+
+  def onDisplayLogEntry(self, entryId: int, scrollBrowser: bool) -> None:
+    if entryId != kTempItemId:
+      if self.logEdit.isModified():
+        # TODO: Display dialog asking if user wants to save
+        print('TODO: Display dialog asking if user wants to save')
+
+      date = julianDayToDate(entryId)
+      self.setDateCurrent(date, scrollBrowser)
 
   def closeEvent(self, event):
     self.closeAppWindow()

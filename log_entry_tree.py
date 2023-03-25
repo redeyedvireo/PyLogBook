@@ -1,5 +1,5 @@
 from PyQt5 import uic, QtCore, QtGui, QtWidgets
-
+import datetime
 
 class CLogEntryTree(QtWidgets.QTreeWidget):
   def __init__(self, parent):
@@ -11,5 +11,9 @@ class CLogEntryTree(QtWidgets.QTreeWidget):
     pass
 
   def makeTemporaryEntryPermanent(self, date, entryId):
+    # TODO: Implement
+    pass
+
+  def setCurrentDate(self, date: datetime.date):
     # TODO: Implement
     pass

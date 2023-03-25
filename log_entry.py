@@ -49,6 +49,12 @@ class LogEntry():
   def numModificationsAsString(self) -> str:
     return str(self.numModifications)
 
+  def incrementNumModifications(self) -> None:
+    self.numModifications += 1
+
+  def updateLastModificationDateTime(self) -> None:
+    self.lastModifiedDateTime = datetime.datetime.now(datetime.timezone.utc)
+
   @staticmethod
   def fromData(entryId: int, content: str, tags: str, lastModificationDateTime: datetime.datetime):
     logEntry = LogEntry()

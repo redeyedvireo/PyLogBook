@@ -1,7 +1,10 @@
 from PyQt5 import uic, QtCore, QtGui, QtWidgets
 
 class RichTextEditWidget(QtWidgets.QWidget):
+  logTextChangedSignal = QtCore.pyqtSignal()
+
   def __init__(self, parent):
+
     super(RichTextEditWidget, self).__init__(parent)
     uic.loadUi('RichTextEdit.ui', self)
 
@@ -33,6 +36,7 @@ class RichTextEditWidget(QtWidgets.QWidget):
     self.textBackgroundButton.colorChangedSignal.connect(self.onTextBackgroundChanged)
     self.textBackgroundButton.noColorSignal.connect(self.onBackgroundNoColor)
     self.textEdit.selectionChanged.connect(self.onSelectionChanged)
+    self.textEdit.textChanged.connect(self.onTextChanged)
     self.styleButton.triggered.connect(self.onStyleButtonTriggered)
 
   def populatePointSizesCombo(self):
@@ -186,6 +190,10 @@ class RichTextEditWidget(QtWidgets.QWidget):
       self.textBackgroundButton.setNoColor()
 
   # Slots
+
+  @QtCore.pyqtSlot()
+  def onTextChanged(self):
+    self.logTextChangedSignal.emit()
 
   @QtCore.pyqtSlot(QtGui.QColor)
   def onTextColorChanged(self, color):

@@ -314,7 +314,7 @@ class Database:
 
     return queryObj.next()
 
-  def addNewLog(self, entryDate: datetime.date, logEntry: LogEntry):
+  def addNewLog(self, entryDate: datetime.date, logEntry: LogEntry) -> int:
     queryObj = QtSql.QSqlQuery(self.db)
 
     entryId = dateToJulianDay(entryDate)
@@ -346,6 +346,41 @@ class Database:
       return kTempItemId
 
     return entryId
+
+  def updateLog(self, entryId: int, content: str, tags: str) -> bool:
+    existingLogEntry = self.getLogEntry(entryId)
+
+    if existingLogEntry:
+      existingLogEntry.incrementNumModifications()
+      existingLogEntry.updateLastModificationDateTime()
+      existingLogEntry.setTagsFromString(tags)
+
+      # TODO: If password protected, encrypt the data
+      # TODO: This should be done through a function call that can also be called from addNewLog.
+      encryptedData = content
+
+      queryObj = QtSql.QSqlQuery(self.db)
+
+      queryObj.prepare('update logs set contents=?, tags=?, lastmodifieddate=?, nummodifications=? where entryid=?')
+
+      queryObj.addBindValue(encryptedData)
+      queryObj.addBindValue(existingLogEntry.tagsAsString())
+      queryObj.addBindValue(existingLogEntry.lastModifiedDateTimeAsTimestamp())
+      queryObj.addBindValue(existingLogEntry.numModifications)
+      queryObj.addBindValue(entryId)
+
+      queryObj.exec_()
+
+      # Check for errors
+      sqlErr = queryObj.lastError()
+      if sqlErr.type() != QtSql.QSqlError.NoError:
+        self.reportError(f'Error when attempting to store a new log entry: {sqlErr.text()}')
+        return False
+      else:
+        return True
+    else:
+      self.reportError(f'Error retrieving existing log {entryId} for updating')
+      return False
 
   def getLogEntry(self, entryId: int) -> LogEntry | None:
     queryObj = QtSql.QSqlQuery(self.db)
