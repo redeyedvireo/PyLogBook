@@ -151,8 +151,7 @@ class RichTextEditWidget(QtWidgets.QWidget):
     return maxFontSize
 
   def updateControls(self):
-    selectionCursor = self.textEdit.textCursor()
-    selectionFormat = selectionCursor.charFormat()
+    selectionCursor, selectionFormat = self.getCursorAndSelectionFormat()
 
     fontFamily = selectionFormat.fontFamily()
     index = self.fontCombo.findText(fontFamily)
@@ -223,8 +222,7 @@ class RichTextEditWidget(QtWidgets.QWidget):
     self.textEdit.setTextCursor(selectionCursor)
 
   def onTextColorNoColor(self):
-    selectionCursor = self.textEdit.textCursor()
-    selectionFormat = selectionCursor.charFormat()
+    selectionCursor, selectionFormat = self.getCursorAndSelectionFormat()
 
     # NOTE: This approach will cause all text in the selection to take on
     # all characteristics of the selectionFormat.  It has the effect of
@@ -247,8 +245,7 @@ class RichTextEditWidget(QtWidgets.QWidget):
 
   @QtCore.pyqtSlot()
   def onBackgroundNoColor(self):
-    selectionCursor = self.textEdit.textCursor()
-    selectionFormat = selectionCursor.charFormat()
+    selectionCursor, selectionFormat = self.getCursorAndSelectionFormat()
 
     # NOTE: This approach will cause all text in the selection to take on
     # all characteristics of the selectionFormat.  It has the effect of
