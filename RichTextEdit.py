@@ -37,6 +37,7 @@ class RichTextEditWidget(QtWidgets.QWidget):
     self.textBackgroundButton.noColorSignal.connect(self.onBackgroundNoColor)
     self.textEdit.selectionChanged.connect(self.onSelectionChanged)
     self.textEdit.textChanged.connect(self.onTextChanged)
+    self.textEdit.cursorPositionChanged.connect(self.onCursorPositionChanged)
     self.styleButton.triggered.connect(self.onStyleButtonTriggered)
     self.boldButton.clicked.connect(self.onBoldButtonClicked)
     self.italicButton.clicked.connect(self.onItalicButtonClicked)
@@ -44,6 +45,8 @@ class RichTextEditWidget(QtWidgets.QWidget):
     self.leftAlignButton.clicked.connect(self.onLeftAlignButtonClicked)
     self.centerAlignButton.clicked.connect(self.onCenterAlignButtonClicked)
     self.rightAlignButton.clicked.connect(self.onRightAlignButtonClicked)
+    self.bulletTableInsertButton.clicked.connect(self.onBulletTableInsertButtonClicked)
+    self.numberTableInsertButton.clicked.connect(self.onNumberTableInsertButtonClicked)
 
   def populatePointSizesCombo(self):
     fontDatabase = QtGui.QFontDatabase()
@@ -211,6 +214,10 @@ class RichTextEditWidget(QtWidgets.QWidget):
   def onTextChanged(self):
     self.logTextChangedSignal.emit()
 
+  @QtCore.pyqtSlot()
+  def onCursorPositionChanged(self):
+    self.updateControls()
+
   @QtCore.pyqtSlot(QtGui.QColor)
   def onTextColorChanged(self, color):
     selectionCursor = self.textEdit.textCursor()
@@ -328,3 +335,23 @@ class RichTextEditWidget(QtWidgets.QWidget):
     selectionCursor.setBlockFormat(blockFormat)
 
     self.textEdit.setTextCursor(selectionCursor)
+
+  @QtCore.pyqtSlot()
+  def onBulletTableInsertButtonClicked(self):
+    selectionCursor = self.textEdit.textCursor()
+
+    newListFormat = QtGui.QTextListFormat()
+    newListFormat.setIndent(1)
+    newListFormat.setStyle(QtGui.QTextListFormat.Style.ListDisc)
+
+    selectionCursor.createList(newListFormat)
+
+  @QtCore.pyqtSlot()
+  def onNumberTableInsertButtonClicked(self):
+    selectionCursor = self.textEdit.textCursor()
+
+    newListFormat = QtGui.QTextListFormat()
+    newListFormat.setIndent(1)
+    newListFormat.setStyle(QtGui.QTextListFormat.Style.ListDecimal)
+
+    selectionCursor.createList(newListFormat)
