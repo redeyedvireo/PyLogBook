@@ -38,6 +38,12 @@ class RichTextEditWidget(QtWidgets.QWidget):
     self.textEdit.selectionChanged.connect(self.onSelectionChanged)
     self.textEdit.textChanged.connect(self.onTextChanged)
     self.styleButton.triggered.connect(self.onStyleButtonTriggered)
+    self.boldButton.clicked.connect(self.onBoldButtonClicked)
+    self.italicButton.clicked.connect(self.onItalicButtonClicked)
+    self.underlineButton.clicked.connect(self.onUnderlineButtonClicked)
+    self.leftAlignButton.clicked.connect(self.onLeftAlignButtonClicked)
+    self.centerAlignButton.clicked.connect(self.onCenterAlignButtonClicked)
+    self.rightAlignButton.clicked.connect(self.onRightAlignButtonClicked)
 
   def populatePointSizesCombo(self):
     fontDatabase = QtGui.QFontDatabase()
@@ -189,6 +195,17 @@ class RichTextEditWidget(QtWidgets.QWidget):
     else:
       self.textBackgroundButton.setNoColor()
 
+  def getCursorAndSelectionFormat(self) -> tuple[QtGui.QTextCursor, QtGui.QTextCharFormat]:
+    selectionCursor = self.textEdit.textCursor()
+    selectionFormat = selectionCursor.charFormat()
+    return (selectionCursor, selectionFormat)
+
+  def getCursorAndBlockFormat(self) -> tuple[QtGui.QTextCursor, QtGui.QTextBlockFormat]:
+    selectionCursor = self.textEdit.textCursor()
+    blockFormat = selectionCursor.blockFormat()
+    return (selectionCursor, blockFormat)
+
+
   # Slots
 
   @QtCore.pyqtSlot()
@@ -253,3 +270,64 @@ class RichTextEditWidget(QtWidgets.QWidget):
         the current item in the style button. """
     styleId = action.data()
     print(f'Style button triggered.  Style: {styleId}')
+
+  @QtCore.pyqtSlot()
+  def onBoldButtonClicked(self):
+    selectionCursor, selectionFormat = self.getCursorAndSelectionFormat()
+
+    tempCharFormat = QtGui.QTextCharFormat()
+    if selectionFormat.fontWeight != QtGui.QFont.Weight.Bold:
+      tempCharFormat.setFontWeight(QtGui.QFont.Weight.Bold)
+    else:
+      tempCharFormat.setFontWeight(QtGui.QFont.Weight.Normal)
+
+    selectionCursor.mergeCharFormat(tempCharFormat)
+
+    self.textEdit.setTextCursor(selectionCursor)
+
+  @QtCore.pyqtSlot()
+  def onItalicButtonClicked(self):
+    selectionCursor, selectionFormat = self.getCursorAndSelectionFormat()
+
+    tempCharFormat = QtGui.QTextCharFormat()
+    tempCharFormat.setFontItalic(not selectionFormat.fontItalic())
+    selectionCursor.mergeCharFormat(tempCharFormat)
+
+    self.textEdit.setTextCursor(selectionCursor)
+
+  @QtCore.pyqtSlot()
+  def onUnderlineButtonClicked(self):
+    selectionCursor, selectionFormat = self.getCursorAndSelectionFormat()
+
+    tempCharFormat = QtGui.QTextCharFormat()
+    tempCharFormat.setFontUnderline(not selectionFormat.fontUnderline())
+    selectionCursor.mergeCharFormat(tempCharFormat)
+
+    self.textEdit.setTextCursor(selectionCursor)
+
+  @QtCore.pyqtSlot()
+  def onLeftAlignButtonClicked(self):
+    selectionCursor, blockFormat = self.getCursorAndBlockFormat()
+
+    blockFormat.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeft)
+    selectionCursor.setBlockFormat(blockFormat)
+
+    self.textEdit.setTextCursor(selectionCursor)
+
+  @QtCore.pyqtSlot()
+  def onCenterAlignButtonClicked(self):
+    selectionCursor, blockFormat = self.getCursorAndBlockFormat()
+
+    blockFormat.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+    selectionCursor.setBlockFormat(blockFormat)
+
+    self.textEdit.setTextCursor(selectionCursor)
+
+  @QtCore.pyqtSlot()
+  def onRightAlignButtonClicked(self):
+    selectionCursor, blockFormat = self.getCursorAndBlockFormat()
+
+    blockFormat.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight)
+    selectionCursor.setBlockFormat(blockFormat)
+
+    self.textEdit.setTextCursor(selectionCursor)
