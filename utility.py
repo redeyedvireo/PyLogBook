@@ -19,8 +19,8 @@ def formatDateTime(inDateTime: datetime.datetime) -> str:
   return inDateTime.strftime("%B %d, %Y %I:%M%p")
 
 def formatDate(inDate: datetime.date) -> str:
-  return inDate.strftime("%B %d, %Y")
+  return inDate.strftime("%a %b %d %Y")
 
 def dateFromFormattedString(dateStr: str) -> datetime.date:
-  thisDateTime = datetime.datetime.strptime(dateStr, "%B %d, %Y")
+  thisDateTime = datetime.datetime.strptime(dateStr, "%a %b %d %Y")
   return thisDateTime.date()
