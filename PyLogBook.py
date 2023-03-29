@@ -184,7 +184,6 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
       # This is the first item entered - Connect database to log browser and log tree
       # TODO: This should probably be done in the constructor
       # self.logBrowser.setDb(self.db)
-      # self.logEntryTree.setDb(self.db)
       self.createNewLogEntry(self.currentDate)
 
       # TODO: Hide the "Add Addendum" button (need a function that shows/hides appropriate buttons)
@@ -220,7 +219,7 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
     # self.lastModificationDateLabel.setText(QDate::currentDate().toString(Qt::SystemLocaleLongDate))
     # self.numChangesLabel.setText("0")
 
-    # self.logEntryTree.AddTemporaryDay(m_currentDate, m_currentEntryId)
+    self.logEntryTree.addTemporaryDay(self.currentDate, self.currentEntryId)
 
   def setDateCurrent(self, inDate: datetime.date, scrollLogBrowser: bool):
     # TODO: self.removeTemporaryDay()
