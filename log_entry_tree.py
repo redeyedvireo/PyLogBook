@@ -6,13 +6,24 @@ import calendar
 from date_widget_item import CDateWidgetItem
 from month_widget_item import CMonthWidgetItem
 
-from utility import dateToJulianDay, formatDate
+from utility import dateToJulianDay, formatDate, julianDayToDate
 
 class CLogEntryTree(QtWidgets.QTreeWidget):
+  logEntryClickedSignal = QtCore.pyqtSignal(datetime.date)
+
   def __init__(self, parent):
     super(CLogEntryTree, self).__init__(parent)
     self.clear()
     self.logDates: list[datetime.date] = []
+
+    self.itemClicked.connect(self.onItemClicked)
+
+  def onItemClicked(self, item: QtWidgets.QTreeWidgetItem, column: int) -> None:
+    entryId = item.data(0, QtCore.Qt.ItemDataRole.UserRole)
+
+    if entryId > 0:
+      date = julianDayToDate(entryId)
+      self.logEntryClickedSignal.emit(date)
 
   def setLogDates(self, dateList: list[datetime.date]):
     self.logDates = dateList
@@ -27,6 +38,7 @@ class CLogEntryTree(QtWidgets.QTreeWidget):
 
     # Turn sorting back on
     self.setSortingEnabled(True)
+    self.sortByColumn(0, QtCore.Qt.SortOrder.AscendingOrder)
 
   def setCurrentDate(self, date: datetime.date):
     item = self.findEntryByDate(date)

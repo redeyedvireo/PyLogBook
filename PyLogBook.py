@@ -40,6 +40,7 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
     self.submitButton.clicked.connect(self.onSubmitButtonClicked)
     self.curMonth.dateSelectedSignal.connect(self.onDisplayLogEntryScrollBrowser)
     self.logEdit.logTextChangedSignal.connect(self.onLogTextChanged)
+    self.logEntryTree.logEntryClickedSignal.connect(self.onDisplayLogEntryScrollBrowser)
 
     QtCore.QTimer.singleShot(0, self.initialize)
 
@@ -321,10 +322,7 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
       if not success:
         # TODO: Show error dialog
         print('Log update unsuccessful - show error dialog')
-
-      # Update the UI
-      self.logEdit.setDocumentModified(False)
-      self.submitButton.setEnabled(False)
+        return
     else:
       # New entry - create it
       logEntry = LogEntry.fromData(0, self.logEdit.toHtml(), self.tagsEdit.text(), datetime.datetime.now(datetime.timezone.utc))
@@ -342,10 +340,12 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
         # Add entry to the log browser
         self.logBrowser.addDate(self.currentDate)
 
-        self.logEdit.setDocumentModified(False)
-
         # Set current entry
         self.currentEntryId = entryId
+
+    # Update the UI
+    self.logEdit.setDocumentModified(False)
+    self.submitButton.setEnabled(False)
 
 
   def onDisplayLogEntryScrollBrowser(self, date: datetime.date) -> None:
