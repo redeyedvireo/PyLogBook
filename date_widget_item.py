@@ -8,10 +8,7 @@ class CDateWidgetItem(QtWidgets.QTreeWidgetItem):
     super(CDateWidgetItem, self).__init__(parent)
 
   def __lt__(self, other: QtWidgets.QTreeWidgetItem) -> bool:
-    thisDateStr = self.text(0)
-    otherDateStr = other.text(0)
-
-    thisDate = dateFromFormattedString(thisDateStr)
-    otherDate = dateFromFormattedString(otherDateStr)
+    thisDate = self.data(0, QtCore.Qt.ItemDataRole.UserRole)
+    otherDate = other.data(0, QtCore.Qt.ItemDataRole.UserRole)
 
     return thisDate < otherDate
