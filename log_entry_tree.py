@@ -32,13 +32,23 @@ class CLogEntryTree(QtWidgets.QTreeWidget):
     self.setSortingEnabled(False)
 
     for logEntryDate in self.logDates:
-      entryId = dateToJulianDay(logEntryDate)
-
-      self.addDayToLogTree(logEntryDate, entryId)
+      self.addDayToLogTree(logEntryDate)
 
     # Turn sorting back on
     self.setSortingEnabled(True)
     self.sortByColumn(0, QtCore.Qt.SortOrder.AscendingOrder)
+
+  def addLogDate(self, date: datetime.date):
+    """ Adds a new date to the tree. """
+    item = self.findEntryByDate(date)
+
+    if item is None:
+      # New item
+      self.addDayToLogTree(date)
+    else:
+      # If the item already exists, it might be a temporary day, which uses the italic font.
+      # In this case, turn off the italic
+      self.setItemItalic(item, False)
 
   def setCurrentDate(self, date: datetime.date):
     item = self.findEntryByDate(date)
@@ -46,7 +56,8 @@ class CLogEntryTree(QtWidgets.QTreeWidget):
     if item is not None:
       self.setCurrentItem(item)
 
-  def addDayToLogTree(self, logEntryDate: datetime.date, entryId: int) -> QtWidgets.QTreeWidgetItem | None:
+  def addDayToLogTree(self, logEntryDate: datetime.date) -> QtWidgets.QTreeWidgetItem | None:
+    entryId = dateToJulianDay(logEntryDate)
     yearItem = self.addYearToLogTree(logEntryDate.year)
 
     if yearItem is not None:
@@ -133,14 +144,34 @@ class CLogEntryTree(QtWidgets.QTreeWidget):
 
     if item is not None:
       item.setData(0, QtCore.Qt.ItemDataRole.UserRole, entryId)
-      itemFont = item.font(0)
-      itemFont.setItalic(False)
-      item.setFont(0, itemFont)
+      self.setItemItalic(item, False)
 
-  def addTemporaryDay(self, date: datetime.date, entryId: int) -> None:
-    item = self.addDayToLogTree(date, entryId)
+  def addTemporaryDay(self, date: datetime.date) -> None:
+    item = self.addDayToLogTree(date)
 
     if item is not None:
-      itemFont = item.font(0)
-      itemFont.setItalic(True)
-      item.setFont(0, itemFont)
+      self.setItemItalic(item, True)
+
+  def removeTemporaryDay(self, dateOrLogId: datetime.date | int):
+    if isinstance(dateOrLogId, datetime.date):
+      date = dateOrLogId
+    else:
+      date = julianDayToDate(dateOrLogId)
+
+    dateItem = self.findEntryByDate(date)
+
+    if dateItem is not None:
+      parent = dateItem.parent()
+      parent.removeChild(dateItem)
+
+      # If a parent (a month node) has no children, remove it
+      while parent.childCount() == 0 and parent.parent() is not None:
+        grandParent = parent.parent()
+
+        grandParent.removeChild(parent)
+        parent = grandParent
+
+  def setItemItalic(self, item, italicFlag):
+    itemFont = item.font(0)
+    itemFont.setItalic(italicFlag)
+    item.setFont(0, itemFont)

@@ -16,11 +16,13 @@ def dateToJulianDay(inDate: datetime.date) -> int:
   return qtDate.toJulianDay()
 
 def formatDateTime(inDateTime: datetime.datetime) -> str:
-  return inDateTime.strftime("%B %d, %Y %I:%M%p")
+  return inDateTime.strftime("%B %d, %Y %I:%M %p")
 
+# Format date for the Log Entry Tree
 def formatDate(inDate: datetime.date) -> str:
   return inDate.strftime("%a %b %d %Y")
 
+# Take a date string formatted for the Log Entry Tree, and convert it to a date
 def dateFromFormattedString(dateStr: str) -> datetime.date:
   thisDateTime = datetime.datetime.strptime(dateStr, "%a %b %d %Y")
   return thisDateTime.date()

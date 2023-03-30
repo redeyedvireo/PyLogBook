@@ -314,7 +314,10 @@ class Database:
 
     return queryObj.next()
 
-  def addNewLog(self, entryDate: datetime.date, logEntry: LogEntry) -> int:
+  def addNewLog(self, entryDate: datetime.date, logEntry: LogEntry) -> int | None:
+    """ Adds a new log to the database.  Returns the entryId of the entry, or None
+        if there was an error.
+    """
     queryObj = QtSql.QSqlQuery(self.db)
 
     entryId = dateToJulianDay(entryDate)
@@ -343,7 +346,7 @@ class Database:
     sqlErr = queryObj.lastError()
     if sqlErr.type() != QtSql.QSqlError.NoError:
       self.reportError("Error when attempting to store a new log entry: {}".format(sqlErr.text()))
-      return kTempItemId
+      return None
 
     return entryId
 

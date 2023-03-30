@@ -143,8 +143,8 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
           self.deleteButton.setEnabled(True)
           self.submitButton.setEnabled(False)
         else:
-          # TODO: Need error dialog indicating the entry was not found in the database
           logging.error(f'[PyLogBookWindow.displayLog] Entry {entryId} not found in database')
+          QtWidgets.QMessageBox.critical(self, kAppName, "Entry was not found in the database")
       else:
         # The entry does not exist.  The user is allowed to create entries for any day.
         entryDate = julianDayToDate(entryId)
@@ -168,6 +168,10 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
 
         self.deleteButton.setEnabled(False)
         self.submitButton.setEnabled(True)
+
+  def removeTemporaryDay(self):
+    if self.currentEntryId == kTempItemId:
+      self.logEntryTree.removeTemporaryDay(self.currentEntryId)
 
   def setInitialEntryToDisplay(self):
     # Display today's date to start with.  If there is no entry for
@@ -196,7 +200,7 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
     # TODO: Implement
     pass
 
-  def createNewLogEntry(self, date):
+  def createNewLogEntry(self, date: datetime.date):
     self.logEdit.clear()
     self.tagsEdit.clear()
 
@@ -215,15 +219,48 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
     fontFamily = 'Arial'    # TODO: m_prefs.GetStringPref("editor-defaultfontfamily")
     self.logEdit.newDocument(fontFamily, fontSize)
 
-    # TODO: Implement this
-    # self.logDateLabel.setText(date.toString(Qt::SystemLocaleLongDate))
-    # self.lastModificationDateLabel.setText(QDate::currentDate().toString(Qt::SystemLocaleLongDate))
-    # self.numChangesLabel.setText("0")
+    self.logDateLabel.setText(formatDate(date))
+    self.lastModificationDateLabel.setText(formatDateTime(datetime.datetime.now(datetime.timezone.utc)))
+    self.numChangesLabel.setText("0")
 
-    self.logEntryTree.addTemporaryDay(self.currentDate, self.currentEntryId)
+    self.logEntryTree.addTemporaryDay(self.currentDate)
+
+  def saveLogEntry(self) -> tuple[bool, bool, int]:
+    """ Saves the log entry as self.currentEntryId.
+        Returns a tuple:
+        (success, newLog?, logId)
+    """
+    if self.db.entryExists(self.currentEntryId):
+      success = self.db.updateLog(self.currentEntryId, self.logEdit.toHtml(), self.tagsEdit.text())
+      if success:
+        return (True, False, self.currentEntryId)
+      else:
+        logging.error('[saveLogEntry] Log update unsuccessful')
+        QtWidgets.QMessageBox.critical(self, kAppName, "Log update unsuccessful")
+        return (False, False, kTempItemId)
+    else:
+      # New entry - create it
+      logEntry = LogEntry.fromData(0, self.logEdit.toHtml(), self.tagsEdit.text(), datetime.datetime.now(datetime.timezone.utc))
+      entryId = self.db.addNewLog(self.currentDate, logEntry)
+
+      if entryId is None:
+        return (False, True, kTempItemId)
+      else:
+        return (True, True, entryId)
+
+  def addNewLogEntryToWidgets(self, entryId):
+    """ Adds a new log entry to the calendar, log entry tree, and log browser. """
+    # Add entry to the calendar widget
+    self.curMonth.addLogDate(self.currentDate)
+
+    # Add entry to the log browser
+    self.logBrowser.addDate(self.currentDate)
+
+    # Add entry to the log entry tree
+    self.logEntryTree.addLogDate(self.currentDate)
 
   def setDateCurrent(self, inDate: datetime.date, scrollLogBrowser: bool):
-    # TODO: self.removeTemporaryDay()
+    self.removeTemporaryDay()
 
     # Scroll to this date in the log tree
     self.logEntryTree.setCurrentDate(inDate)
@@ -317,28 +354,17 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
 
   @QtCore.pyqtSlot()
   def onSubmitButtonClicked(self):
-    if self.db.entryExists(self.currentEntryId):
-      success = self.db.updateLog(self.currentEntryId, self.logEdit.toHtml(), self.tagsEdit.text())
-      if not success:
-        # TODO: Show error dialog
-        print('Log update unsuccessful - show error dialog')
-        return
-    else:
-      # New entry - create it
-      logEntry = LogEntry.fromData(0, self.logEdit.toHtml(), self.tagsEdit.text(), datetime.datetime.now(datetime.timezone.utc))
-      entryId = self.db.addNewLog(self.currentDate, logEntry)
+    success, newLog, entryId = self.saveLogEntry()
 
+    if not success:
+      logging.error('[onSubmitButtonClicked] Log update unsuccessful')
+      QtWidgets.QMessageBox.critical(self, kAppName, "There was a problem when saving the log.  The log was not saved.")
+      return
+
+    if newLog:
       if entryId != kTempItemId:
         # Update the UI
-
-        # Remove italic from the tree entry
-        self.logEntryTree.makeTemporaryEntryPermanent(self.currentDate, entryId)
-
-        # Add entry to the calendar widget
-        self.curMonth.addLogDate(self.currentDate)
-
-        # Add entry to the log browser
-        self.logBrowser.addDate(self.currentDate)
+        self.addNewLogEntryToWidgets(entryId)
 
         # Set current entry
         self.currentEntryId = entryId
@@ -355,8 +381,16 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
   def onDisplayLogEntry(self, entryId: int, scrollBrowser: bool) -> None:
     if entryId != kTempItemId:
       if self.logEdit.isModified():
-        # TODO: Display dialog asking if user wants to save
-        print('TODO: Display dialog asking if user wants to save')
+        message = 'The log has not been saved.  Would you like to save it?'
+        button = QtWidgets.QMessageBox.question(self, kAppName, message)
+
+        if button == QtWidgets.QMessageBox.Yes:
+          success, newLog, savedEntryId = self.saveLogEntry()
+
+          if not success:
+            logging.error('[onDisplayLogEntry] Log update unsuccessful')
+            QtWidgets.QMessageBox.critical(self, kAppName, "There was a problem when saving the log.  The log was not saved.")
+            return
 
       date = julianDayToDate(entryId)
       self.setDateCurrent(date, scrollBrowser)
