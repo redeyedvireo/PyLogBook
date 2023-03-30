@@ -270,7 +270,7 @@ class Database:
   def getLogEntryDate(self, entryId: int) -> datetime.date:
     return julianDayToDate(entryId)
 
-  def getEntryDates(self):
+  def getEntryDates(self) -> list[datetime.date]:
     """ Returns a list of dates for which log entries exist. """
     queryObj = QtSql.QSqlQuery(self.db)
     queryStr = "select entryid from logs"
@@ -285,7 +285,7 @@ class Database:
       return []
 
     entryField = queryObj.record().indexOf('entryid')
-    dateList = []
+    dateList: list[datetime.date] = []
 
     while queryObj.next():
       julianDay = int(queryObj.value(entryField))
