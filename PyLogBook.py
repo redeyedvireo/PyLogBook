@@ -37,6 +37,8 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
     self.currentEntryId = dateToJulianDay(self.currentDate)
     self.tempNewLog = ''
 
+    self.logBrowser.setDb(self.db)
+
     self.submitButton.clicked.connect(self.onSubmitButtonClicked)
     self.curMonth.dateSelectedSignal.connect(self.onDisplayLogEntryScrollBrowser)
     self.logEdit.logTextChangedSignal.connect(self.onLogTextChanged)
@@ -187,8 +189,6 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
 
     if self.currentEntryId == kTempItemId:
       # This is the first item entered - Connect database to log browser and log tree
-      # TODO: This should probably be done in the constructor
-      # self.logBrowser.setDb(self.db)
       self.createNewLogEntry(self.currentDate)
 
       # TODO: Hide the "Add Addendum" button (need a function that shows/hides appropriate buttons)
@@ -197,8 +197,9 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
       self.setDateCurrent(self.db.getLogEntryDate(entryId), True)
 
   def setInitialBrowserEntries(self):
-    # TODO: Implement
-    pass
+    dateList = self.db.getEntryDates()
+    self.logBrowser.setDateList(dateList)
+    self.logBrowser.displayCurrentBrowserPage()
 
   def createNewLogEntry(self, date: datetime.date):
     self.logEdit.clear()
