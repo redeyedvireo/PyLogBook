@@ -36,7 +36,7 @@ class LogBrowser(QtWidgets.QWidget):
 
     # Loop and display several log entries
     startEntry = self.numEntriesPerPage * self.currentPageNum
-    lastEntry = min(startEntry + self.numEntriesPerPage, len(self.dateList))
+    lastEntry = min(startEntry + self.numEntriesPerPage, len(self.logDates))
 
     for i in range(startEntry, lastEntry):
       entryDate = self.dateList[i]
