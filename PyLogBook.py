@@ -53,8 +53,29 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
     if len(self.getDatabasePath()) > 0:
       if self.db.openDatabase(self.getDatabasePath()):
         if self.db.isPasswordProtected():
-          # TODO: Deal with passwords
-          pass
+          password = ''
+
+          for x in range(3):
+            passwordTuple = QtWidgets.QInputDialog.getText(self, 'PyLogBook - Enter Password',
+                                                      'Enter log password:', QtWidgets.QLineEdit.EchoMode.Password)
+
+            if passwordTuple[1]:
+              password = passwordTuple[0]
+
+              if self.db.passwordMatch(password):
+                # Password correct
+                break
+              else:
+                # Wrong password.  Has the user used up all 3 attempts?
+                if x == 2:
+                  # Yup
+                  QtWidgets.QMessageBox.critical(self, kAppName, 'The password you entered was incorrect.')
+                  self.db.closeDatabase()
+                  return False
+            else:
+              # User clicked cancel
+              self.db.closeDatabase()
+              return False
 
         self.initControls()
         self.setInitialEntryToDisplay()
@@ -183,7 +204,7 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
     self.currentDate = datetime.date.today()
 
     if self.db.entryExistsForDate(self.currentDate):
-      entryId = self.db.getLogIdForDate(self.currentDate)
+      entryId = dateToJulianDay(self.currentDate)
 
     self.currentEntryId = entryId
 
@@ -194,7 +215,7 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
       # TODO: Hide the "Add Addendum" button (need a function that shows/hides appropriate buttons)
     else:
       # Fetch the entry
-      self.setDateCurrent(self.db.getLogEntryDate(entryId), True)
+      self.setDateCurrent(julianDayToDate(entryId), True)
 
   def setInitialBrowserEntries(self):
     dateList = self.db.getEntryDates()
@@ -272,7 +293,7 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
 
     self.curMonth.setCurrentDate(inDate)
 
-    entryId = self.db.getLogIdForDate(inDate)
+    entryId = dateToJulianDay(inDate)
 
     if entryId != errNoDateFound and entryId != kTempItemId:
       self.currentEntryId = entryId

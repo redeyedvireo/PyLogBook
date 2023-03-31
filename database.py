@@ -264,11 +264,30 @@ class Database:
       self.setGlobalValue('hashedPw', hashedPassword)
       self.dbPassword = plainTextPassword
 
-  def getLogIdForDate(self, date: datetime.date) -> int:
-    return dateToJulianDay(date)
+  def passwordMatch(self, password) -> bool:
+    # TODO: Need to also support the 'encrpw' field, for older databases
+    hashedPwFieldName = 'hashedPw'
 
-  def getLogEntryDate(self, entryId: int) -> datetime.date:
-    return julianDayToDate(entryId)
+    queryObj = QtSql.QSqlQuery(self.db)
+    queryStr = f'select stringval from globals where key="{hashedPwFieldName}"'
+    queryObj.prepare(queryStr)
+
+    queryObj.exec_()
+
+    # Check for errors
+    sqlErr = queryObj.lastError()
+    if sqlErr.type() != QtSql.QSqlError.NoError:
+      self.reportError("SQLite error in passwordMatch: {}".format(sqlErr.text()))
+      return False
+
+    if queryObj.next():
+      self.encrypter.setPassword(password)
+      pw = queryObj.record().value(0)
+      hashedPw = self.encrypter.hashedPassword()
+
+      if pw == hashedPw:
+        return True
+    return False
 
   def getEntryDates(self) -> list[datetime.date]:
     """ Returns a list of dates for which log entries exist. """
