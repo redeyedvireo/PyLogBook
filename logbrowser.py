@@ -15,6 +15,12 @@ class LogBrowser(QtWidgets.QWidget):
 
     self.pageSpin.setEnabled(False)
 
+    self.beginButton.clicked.connect(self.onBeginButtonClicked)
+    self.endButton.clicked.connect(self.onEndButtonClicked)
+    self.previousButton.clicked.connect(self.onPreviousButtonClicked)
+    self.nextButton.clicked.connect(self.onNextButtonClicked)
+    self.pageSpin.valueChanged.connect(self.onPageSpinValueChanged)
+
   def setDb(self, db: Database):
     self.db = db
 
@@ -32,7 +38,7 @@ class LogBrowser(QtWidgets.QWidget):
     startEntry = self.numEntriesPerPage * self.currentPageNum
     lastEntry = min(startEntry + self.numEntriesPerPage, len(self.dateList))
 
-    for i in range(startEntry, lastEntry + 1):
+    for i in range(startEntry, lastEntry):
       entryDate = self.dateList[i]
       entryId = dateToJulianDay(entryDate)
       logEntry = self.db.getLogEntry(entryId)
@@ -70,6 +76,8 @@ class LogBrowser(QtWidgets.QWidget):
       self.pageSpin.setMinimum(1)
       self.pageSpin.setMaximum(self.getNumPages())
 
+    self.updateNumberOfPagesLabel()
+
   def getNumPages(self):
     numPages = len(self.dateList) / self.numEntriesPerPage
 
@@ -79,8 +87,52 @@ class LogBrowser(QtWidgets.QWidget):
     return int(numPages)
 
   def updateNumberOfPagesLabel(self):
-    self.numPagesLabel(f'/ {self.getNumPages()} pages')
+    self.numPagesLabel.setText(f'/ {self.getNumPages()} pages')
 
   def scrollToItem(self, inDate: datetime.date) -> None:
     # TODO: Implement
     pass
+
+  def gotoPage(self, pageNum: int) -> None:
+    if pageNum <= self.getNumPages() and pageNum > 0:
+      # See if this page is already current
+      zeroBasedPageNum = pageNum - 1
+
+      if self.currentPageNum != zeroBasedPageNum:
+        self.currentPageNum = zeroBasedPageNum
+        self.displayCurrentBrowserPage()
+
+        # Update horizontal scroll bar
+        self.pageSpin.setValue(pageNum)
+
+        self.nextButton.setEnabled(pageNum < self.getNumPages())
+        self.previousButton.setEnabled(pageNum > 1)
+
+  def getCurrentPageAsOneBasedNumber(self) -> int:
+    return self.currentPageNum + 1
+
+  @QtCore.pyqtSlot()
+  def onBeginButtonClicked(self):
+    self.gotoPage(1)
+
+  @QtCore.pyqtSlot()
+  def onEndButtonClicked(self):
+    self.gotoPage(self.getNumPages())
+
+  @QtCore.pyqtSlot()
+  def onPreviousButtonClicked(self):
+    curPage = self.getCurrentPageAsOneBasedNumber()
+
+    if curPage > 1:
+      self.gotoPage(curPage - 1)
+
+  @QtCore.pyqtSlot()
+  def onNextButtonClicked(self):
+    curPage = self.getCurrentPageAsOneBasedNumber()
+
+    if curPage < self.getNumPages():
+      self.gotoPage(curPage + 1)
+
+  @QtCore.pyqtSlot(int)
+  def onPageSpinValueChanged(self, value: int):
+    self.gotoPage(value)
