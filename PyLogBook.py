@@ -64,6 +64,7 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
 
               if self.db.passwordMatch(password):
                 # Password correct
+                self.db.setPasswordInMemory(password)
                 break
               else:
                 # Wrong password.  Has the user used up all 3 attempts?

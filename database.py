@@ -5,9 +5,9 @@ import datetime
 
 from encrypter import Encrypter
 from log_entry import LogEntry
-from utility import dateToJulianDay, julianDayToDate
+from utility import bytesToQByteArray, dateToJulianDay, julianDayToDate
 
-from constants import kTempItemId
+from constants import kTempItemId, kHashedPwFieldName, kSaltFieldName
 
 
 # Global value data type constants
@@ -19,7 +19,6 @@ class Database:
   def __init__(self):
     super(Database, self).__init__()
     self.db = None
-    self.dbPassword = ''
     self.encrypter = Encrypter()
 
   def openDatabase(self, pathName) -> bool:
@@ -116,7 +115,7 @@ class Database:
     if sqlErr.type() != QtSql.QSqlError.NoError:
       self.reportError( "Error when attempting to the logs table: {}".format(sqlErr.text()))
 
-  def getGlobalValue(self, key):
+  def getGlobalValue(self, key: str) -> int | str | bytes | None:
     """ Returns the value of a 'global value' for the given key. """
     queryObj = QtSql.QSqlQuery(self.db)
     queryObj.prepare("select datatype from globals where key = ?")
@@ -173,9 +172,13 @@ class Database:
         return None
 
       value = queryObj.value(valueField)
+
+      if isinstance(value, QtCore.QByteArray):
+        value = bytes(value)
+
       return value
 
-  def setGlobalValue(self, key, value):
+  def setGlobalValue(self, key: str, value: int | str | bytes):
     """ Sets the value of the given key to the given value. """
 
     # See if the key exists
@@ -198,8 +201,11 @@ class Database:
         createStr = "update globals set intval=? where key=?"
       elif isinstance(value, str):
         createStr = "update globals set stringval=? where key=?"
-      elif isinstance(value, QtCore.QByteArray):
+      elif isinstance(value, bytes):
         createStr = "update globals set blobval=? where key=?"
+
+        # Must convert to a QByteArray
+        value = bytesToQByteArray(value)
       else:
         self.reportError("setGlobalValue: invalid data type")
         return
@@ -215,9 +221,12 @@ class Database:
       elif isinstance(value, str):
         createStr = "insert into globals (key, datatype, stringval) values (?, ?, ?)"
         dataType = kDataTypeString
-      elif isinstance(value, QtCore.QByteArray):
+      elif isinstance(value, bytes):
         createStr = "insert into globals (key, datatype, blobval) values (?, ?, ?)"
         dataType = kDataTypeBlob
+
+        # Must convert to a QByteArray
+        value = bytesToQByteArray(value)
       else:
         self.reportError("setGlobalValue: invalid data type")
         return
@@ -255,39 +264,35 @@ class Database:
       return atLeastOne
 
   def isPasswordProtected(self):
-    return self.globalValueExists('hashedPw')
+    return self.globalValueExists(kHashedPwFieldName)
 
-  def storePassword(self, plainTextPassword):
+  def setPasswordInMemory(self, plainTextPassword) -> None:
+    # First, get the salt value from the database
+    salt = self.getGlobalValue(kSaltFieldName)
+
+    if salt is not None and isinstance(salt, bytes):
+      self.encrypter.setPasswordAndSalt(plainTextPassword, salt)
+
+  def storePassword(self, plainTextPassword) -> None:
+    """ Sets the password for a new log file.  The salt is generated here. """
     if len(plainTextPassword) > 0:
-      self.encrypter.setPassword(plainTextPassword)
+      self.encrypter.setPasswordGenerateSalt(plainTextPassword)
       hashedPassword = self.encrypter.hashedPassword()
-      self.setGlobalValue('hashedPw', hashedPassword)
-      self.dbPassword = plainTextPassword
+
+      if hashedPassword is not None:
+        self.setGlobalValue(kHashedPwFieldName, hashedPassword)
+        self.setGlobalValue(kSaltFieldName, self.encrypter.salt)
 
   def passwordMatch(self, password) -> bool:
-    # TODO: Need to also support the 'encrpw' field, for older databases
-    hashedPwFieldName = 'hashedPw'
+    storedHashedPassword = self.getGlobalValue(kHashedPwFieldName)
 
-    queryObj = QtSql.QSqlQuery(self.db)
-    queryStr = f'select stringval from globals where key="{hashedPwFieldName}"'
-    queryObj.prepare(queryStr)
+    if storedHashedPassword is not None and isinstance(storedHashedPassword, str):
+      hashedPw = self.encrypter.hashValue(password)
 
-    queryObj.exec_()
-
-    # Check for errors
-    sqlErr = queryObj.lastError()
-    if sqlErr.type() != QtSql.QSqlError.NoError:
-      self.reportError("SQLite error in passwordMatch: {}".format(sqlErr.text()))
+      return storedHashedPassword == hashedPw
+    else:
+      logging.error(f'[passwordMatch] Error retrieving hashed password.')
       return False
-
-    if queryObj.next():
-      self.encrypter.setPassword(password)
-      pw = queryObj.record().value(0)
-      hashedPw = self.encrypter.hashedPassword()
-
-      if pw == hashedPw:
-        return True
-    return False
 
   def getEntryDates(self) -> list[datetime.date]:
     """ Returns a list of dates for which log entries exist. """
@@ -346,8 +351,20 @@ class Database:
     if lastModifiedDateTimeTimestamp is None:
       lastModifiedDateTimeTimestamp = datetime.datetime.now(datetime.timezone.utc).timestamp()
 
-    # TODO: If password protected, encrypt the data
-    encryptedData = logEntry.content
+    encryptedData = b''
+    encryptedTags = b''
+
+    # If password protected, encrypt the data
+    if self.encrypter.hasPassword():
+      encryptedData = self.encrypter.encrypt(logEntry.content)
+      encryptedTags = self.encrypter.encrypt(logEntry.tagsAsString())
+    else:
+      encryptedData = bytes(logEntry.content, 'utf-8')
+      encryptedTags = bytes(logEntry.tagsAsString(), 'utf-8')
+
+    # Must convert bytes to QByteArray
+    encryptedData = bytesToQByteArray(encryptedData)
+    encryptedTags = bytesToQByteArray(encryptedTags)
 
     queryStr = 'insert into logs (entryid, lastModifiedDate, numModifications, contents, tags) values (?, ?, ?, ?, ?)'
 
@@ -357,7 +374,7 @@ class Database:
     queryObj.addBindValue(lastModifiedDateTimeTimestamp)
     queryObj.addBindValue(1)    # Num modifications (always 1 for a new log)
     queryObj.addBindValue(encryptedData)
-    queryObj.addBindValue(logEntry.tagsAsString())
+    queryObj.addBindValue(encryptedTags)
 
     queryObj.exec_()
 
@@ -377,16 +394,28 @@ class Database:
       existingLogEntry.updateLastModificationDateTime()
       existingLogEntry.setTagsFromString(tags)
 
-      # TODO: If password protected, encrypt the data
-      # TODO: This should be done through a function call that can also be called from addNewLog.
-      encryptedData = content
+      # If password protected, encrypt the data
+      encryptedData = b''
+      encryptedTags = b''
+
+      # If password protected, encrypt the data
+      if self.encrypter.hasPassword():
+        encryptedData = self.encrypter.encrypt(existingLogEntry.content)
+        encryptedTags = self.encrypter.encrypt(existingLogEntry.tagsAsString())
+      else:
+        encryptedData = bytes(existingLogEntry.content, 'utf-8')
+        encryptedTags = bytes(existingLogEntry.tagsAsString(), 'utf-8')
+
+      # Must convert bytes to QByteArray
+      encryptedData = bytesToQByteArray(encryptedData)
+      encryptedTags = bytesToQByteArray(encryptedTags)
 
       queryObj = QtSql.QSqlQuery(self.db)
 
       queryObj.prepare('update logs set contents=?, tags=?, lastmodifieddate=?, nummodifications=? where entryid=?')
 
       queryObj.addBindValue(encryptedData)
-      queryObj.addBindValue(existingLogEntry.tagsAsString())
+      queryObj.addBindValue(encryptedTags)
       queryObj.addBindValue(existingLogEntry.lastModifiedDateTimeAsTimestamp())
       queryObj.addBindValue(existingLogEntry.numModifications)
       queryObj.addBindValue(entryId)
@@ -424,12 +453,17 @@ class Database:
       lastModifiedDate = datetime.datetime.fromtimestamp(queryObj.record().value(2), datetime.timezone.utc)
       numModifications = queryObj.record().value(3)
 
-      # TODO: If encrypted, decrypt the contentsData
-
       logEntry = LogEntry()
+
+      # If encrypted, decrypt the contentsData
+      if self.encrypter.hasPassword():
+        logEntry.content = self.encrypter.decrypt(bytes(contentData))
+        logEntry.setTagsFromString(self.encrypter.decrypt(bytes(tagsData)))
+      else:
+        logEntry.content = contentData.decode()
+        logEntry.setTagsFromString(tagsData.decode())
+
       logEntry.entryId = entryId
-      logEntry.content = contentData
-      logEntry.setTagsFromString(tagsData)
       logEntry.lastModifiedDateTime = lastModifiedDate
       logEntry.numModifications = numModifications
 

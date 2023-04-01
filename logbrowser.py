@@ -39,7 +39,7 @@ class LogBrowser(QtWidgets.QWidget):
     lastEntry = min(startEntry + self.numEntriesPerPage, len(self.logDates))
 
     for i in range(startEntry, lastEntry):
-      entryDate = self.dateList[i]
+      entryDate = self.logDates[i]
       entryId = dateToJulianDay(entryDate)
       logEntry = self.db.getLogEntry(entryId)
 
@@ -56,10 +56,10 @@ class LogBrowser(QtWidgets.QWidget):
     self.textBrowser.insertHtml(content)
 
   def addDate(self, date: datetime.date):
-    if date not in self.dateList:
-      self.dateList.append(date)
+    if date not in self.logDates:
+      self.logDates.append(date)
 
-      self.dateList.sort()
+      self.logDates.sort()
 
       self.pageSpin.setMaximum(self.getNumPages())
 
@@ -67,11 +67,11 @@ class LogBrowser(QtWidgets.QWidget):
       self.updateNumberOfPagesLabel()
 
   def setDateList(self, dateList: list[datetime.date]) -> None:
-    self.dateList = dateList
+    self.logDates = dateList
 
-    self.dateList.sort()
+    self.logDates.sort()
 
-    if len(self.dateList) > 0:
+    if len(self.logDates) > 0:
       self.pageSpin.setEnabled(True)
       self.pageSpin.setMinimum(1)
       self.pageSpin.setMaximum(self.getNumPages())
@@ -79,9 +79,9 @@ class LogBrowser(QtWidgets.QWidget):
     self.updateNumberOfPagesLabel()
 
   def getNumPages(self):
-    numPages = len(self.dateList) / self.numEntriesPerPage
+    numPages = len(self.logDates) / self.numEntriesPerPage
 
-    if len(self.dateList) % self.numEntriesPerPage != 0:
+    if len(self.logDates) % self.numEntriesPerPage != 0:
       numPages += 1
 
     return int(numPages)

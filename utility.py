@@ -26,3 +26,6 @@ def formatDate(inDate: datetime.date) -> str:
 def dateFromFormattedString(dateStr: str) -> datetime.date:
   thisDateTime = datetime.datetime.strptime(dateStr, "%a %b %d %Y")
   return thisDateTime.date()
+
+def bytesToQByteArray(data: bytes) -> QtCore.QByteArray:
+  return QtCore.QByteArray(data)

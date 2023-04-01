@@ -4,3 +4,6 @@ kTempItemId = -1
 
 errNoDateFound = -1
 errSqliteError = -2
+
+kHashedPwFieldName = 'hashedPw'
+kSaltFieldName = 'salt'
