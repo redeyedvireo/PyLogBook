@@ -460,8 +460,8 @@ class Database:
         logEntry.content = self.encrypter.decrypt(bytes(contentData))
         logEntry.setTagsFromString(self.encrypter.decrypt(bytes(tagsData)))
       else:
-        logEntry.content = contentData.decode()
-        logEntry.setTagsFromString(tagsData.decode())
+        logEntry.content = bytes(contentData).decode()
+        logEntry.setTagsFromString(bytes(tagsData).decode())
 
       logEntry.entryId = entryId
       logEntry.lastModifiedDateTime = lastModifiedDate
