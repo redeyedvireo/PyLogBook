@@ -49,6 +49,9 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
   def initialize(self):
     logging.info("Starting application...")
 
+    # Disable log entry until a log file is either loaded or created.
+    self.enableLogEntry(False)
+
   def openLogFile(self) -> bool:
     if len(self.getDatabasePath()) > 0:
       if self.db.openDatabase(self.getDatabasePath()):
@@ -87,6 +90,19 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
         return False
     else:
       return False
+
+  def closeLogFile(self):
+    if self.db.isDatabaseOpen():
+      successful = self.checkSaveLog()
+
+      # TODO: May want to loop here, to give the user another chance to save
+
+      self.db.closeDatabase()
+      self.databaseFileName = ''
+
+      self.clearAllControls()
+      self.enableLogEntry(False)
+      self.setAppTitle()
 
   def getDatabasePath(self) -> str:
     return os.path.normpath(os.path.join(self.getDatabaseDirectory(), self.databaseFileName))
@@ -144,6 +160,7 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
     self.addendumButton.setEnabled(enable)
     self.logEdit.setEnabled(enable)
     self.tagsEdit.setEnabled(enable)
+    self.deleteButton.setEnabled(enable)
 
   def initControls(self):
     dateList = self.db.getEntryDates()
@@ -357,7 +374,7 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
 
   @QtCore.pyqtSlot()
   def on_actionClose_triggered(self):
-    QtWidgets.QMessageBox.about(self, "Close Log File", "Close log file triggered")
+    self.closeLogFile()
 
   @QtCore.pyqtSlot()
   def on_actionExit_triggered(self):
@@ -401,20 +418,28 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
     entryId = dateToJulianDay(date)
     self.onDisplayLogEntry(entryId, False)
 
+  def checkSaveLog(self) -> bool:
+    """ If the current log entry is modified but not saved, asks the user whether he wants to save, and
+        saves it if he answers Yes.  Returns an error code.  False indicates there was an error saving,
+        True indicates no error.
+    """
+    if self.logEdit.isModified():
+      message = 'The current log entry has not been saved.  Would you like to save it?'
+      button = QtWidgets.QMessageBox.question(self, kAppName, message)
+
+      if button == QtWidgets.QMessageBox.Yes:
+        success, newLog, savedEntryId = self.saveLogEntry()
+
+        if not success:
+          logging.error('[onDisplayLogEntry] Log update unsuccessful')
+          QtWidgets.QMessageBox.critical(self, kAppName, "There was a problem when saving the log.  The log was not saved.")
+          return False
+
+    return True
+
   def onDisplayLogEntry(self, entryId: int, scrollBrowser: bool) -> None:
     if entryId != kTempItemId:
-      if self.logEdit.isModified():
-        message = 'The log has not been saved.  Would you like to save it?'
-        button = QtWidgets.QMessageBox.question(self, kAppName, message)
-
-        if button == QtWidgets.QMessageBox.Yes:
-          success, newLog, savedEntryId = self.saveLogEntry()
-
-          if not success:
-            logging.error('[onDisplayLogEntry] Log update unsuccessful')
-            QtWidgets.QMessageBox.critical(self, kAppName, "There was a problem when saving the log.  The log was not saved.")
-            return
-
+      self.checkSaveLog()
       date = julianDayToDate(entryId)
       self.setDateCurrent(date, scrollBrowser)
 
@@ -423,7 +448,7 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
 
   def closeAppWindow(self):
     logging.info('Closing app window...')
-    self.db.close()
+    self.closeLogFile()
     # self.saveSettings()
 
 def shutdownApp():
