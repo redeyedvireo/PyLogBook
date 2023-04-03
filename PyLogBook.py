@@ -425,6 +425,10 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
         # Set current entry
         self.currentEntryId = entryId
 
+    else:
+      # Existing log
+      self.logBrowser.displayCurrentBrowserPage()
+
     # Update the UI
     self.logEdit.setDocumentModified(False)
     self.submitButton.setEnabled(False)

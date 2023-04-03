@@ -29,3 +29,6 @@ def dateFromFormattedString(dateStr: str) -> datetime.date:
 
 def bytesToQByteArray(data: bytes) -> QtCore.QByteArray:
   return QtCore.QByteArray(data)
+
+def qByteArrayToBytes(data: QtCore.QByteArray) -> bytes:
+  return bytes(data, 'utf-8')

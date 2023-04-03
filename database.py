@@ -5,7 +5,7 @@ import datetime
 
 from encrypter import Encrypter
 from log_entry import LogEntry
-from utility import bytesToQByteArray, dateToJulianDay, julianDayToDate
+from utility import bytesToQByteArray, dateToJulianDay, julianDayToDate, qByteArrayToBytes
 
 from constants import kTempItemId, kHashedPwFieldName, kSaltFieldName
 
@@ -393,6 +393,7 @@ class Database:
       existingLogEntry.incrementNumModifications()
       existingLogEntry.updateLastModificationDateTime()
       existingLogEntry.setTagsFromString(tags)
+      existingLogEntry.content = content
 
       # If password protected, encrypt the data
       encryptedData = b''
