@@ -30,7 +30,9 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
     super(PyLogBookWindow, self).__init__()
     uic.loadUi('PyLogBookWindow.ui', self)
 
-    self.prefs = Preferences()
+    prefsFilePath = self.getPrefsPath()
+    print(f'Prefs file: {prefsFilePath}')
+    self.prefs = Preferences(prefsFilePath)
 
     self.databaseFileName = ''
     self.logDir = scriptDir
@@ -52,10 +54,7 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
   def initialize(self):
     logging.info("Starting application...")
 
-    prefsFilePath = self.getPrefsPath()
-    print(f'Prefs file: {prefsFilePath}')     # TODO: Remove
-    self.prefs.readPrefsFile(prefsFilePath)
-
+    self.prefs.readPrefsFile()
 
     # Disable log entry until a log file is either loaded or created.
     self.enableLogEntry(False)
