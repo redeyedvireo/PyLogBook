@@ -11,8 +11,9 @@ from PyQt5 import QtCore, QtGui, QtWidgets, uic
 from SetPasswordDialog import SetPasswordDialog
 from database import Database
 
-from constants import kTempItemId, errNoDateFound
+from constants import kTempItemId, errNoDateFound, kPrefsFileName
 from log_entry import LogEntry
+from preferences import Preferences
 from utility import dateToJulianDay, formatDate, formatDateTime, julianDayToDate
 
 kLogFile = 'PyLogBook.log'
@@ -28,6 +29,8 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
   def __init__(self):
     super(PyLogBookWindow, self).__init__()
     uic.loadUi('PyLogBookWindow.ui', self)
+
+    self.prefs = Preferences()
 
     self.databaseFileName = ''
     self.logDir = scriptDir
@@ -48,6 +51,11 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
 
   def initialize(self):
     logging.info("Starting application...")
+
+    prefsFilePath = self.getPrefsPath()
+    print(f'Prefs file: {prefsFilePath}')     # TODO: Remove
+    self.prefs.readPrefsFile(prefsFilePath)
+
 
     # Disable log entry until a log file is either loaded or created.
     self.enableLogEntry(False)
@@ -141,6 +149,15 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
 
   def getDatabaseDirectory(self):
     return self.logDir
+
+  def getPrefsPath(self) -> str:
+    """ Returns the full path to the prefs file. """
+    if platform.system() == 'Windows':
+      appDataDir = os.getenv('APPDATA', scriptPath)
+      return os.path.normpath(os.path.join(appDataDir, kAppName, kPrefsFileName))
+    else:
+      print('Prefs file not yet supported on non-Windows systems.')
+      return ''
 
   def setAppTitle(self):
     if len(self.databaseFileName) > 0:

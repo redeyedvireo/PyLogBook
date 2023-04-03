@@ -7,3 +7,7 @@ errSqliteError = -2
 
 kHashedPwFieldName = 'hashedPw'
 kSaltFieldName = 'salt'
+
+# Prefs constants
+kPrefsFileName = 'PyLogBook.ini'
+kStartupLoadPreviousLog = 'loadprevious'        # Load previous log file when starting up
