@@ -14,6 +14,7 @@ from database import Database
 from constants import kTempItemId, errNoDateFound, kPrefsFileName
 from log_entry import LogEntry
 from preferences import Preferences
+from prefs_dialog import PrefsDialog
 from utility import dateToJulianDay, formatDate, formatDateTime, julianDayToDate
 
 kLogFile = 'PyLogBook.log'
@@ -396,6 +397,12 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
   @QtCore.pyqtSlot()
   def on_actionExit_triggered(self):
     self.close()
+
+  @QtCore.pyqtSlot()
+  def on_actionPreferences_triggered(self):
+    prefsDialog = PrefsDialog(self)
+    if prefsDialog.exec() == QtWidgets.QDialog.Accepted:
+      print('OK selected')
 
   @QtCore.pyqtSlot()
   def on_actionAbout_Qt_triggered(self):
