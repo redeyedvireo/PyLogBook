@@ -56,6 +56,8 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
 
     self.prefs.readPrefsFile()
 
+    self.logBrowser.setNumEntriesPerPage(self.prefs.getNumEntriesPerPage())
+
     # Disable log entry until a log file is either loaded or created.
     self.enableLogEntry(False)
 
@@ -208,13 +210,13 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
 
         self.tempNewLog = ''
 
-        fontSize = 10   # TODO: This should come from prefs
+        fontSize = self.prefs.getEditorDefaultFontSize()
 
         if fontSize < 0:
           fontSize = 10
 
-        # TODO: Need to read font family from prefs
-        self.logEdit.newDocument('Arial', fontSize)
+        fontFamily = self.prefs.getEditorDefaultFontFamily()
+        self.logEdit.newDocument(fontFamily, fontSize)
 
         self.tagsEdit.setText('')
         self.logDateLabel.setText(formatDate(entryDate))
@@ -266,13 +268,12 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
     self.currentDate = date
     self.currentEntryId = dateToJulianDay(date)
 
-    # TODO: Implement this
-    fontSize = 10  # TODO: m_prefs.GetIntPref("editor-defaulttextsize");
+    fontSize = self.prefs.getEditorDefaultFontSize()
 
     if fontSize <= 0:
       fontSize = 10
 
-    fontFamily = 'Arial'    # TODO: m_prefs.GetStringPref("editor-defaultfontfamily")
+    fontFamily = self.prefs.getEditorDefaultFontFamily()
     self.logEdit.newDocument(fontFamily, fontSize)
 
     self.logDateLabel.setText(formatDate(date))

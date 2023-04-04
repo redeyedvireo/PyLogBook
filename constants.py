@@ -11,3 +11,8 @@ kSaltFieldName = 'salt'
 # Prefs constants
 kPrefsFileName = 'PyLogBook.ini'
 kStartupLoadPreviousLog = 'loadprevious'        # Load previous log file when starting up
+
+kGeneralStartupLoad = 'general-startupload'
+kEditorDefaultTextSize = 'editor-defaulttextsize'
+kEditorDefaultFontFamily = 'editor-defaultfontfamily'
+kBrowserLogsPerPage = 'browser-logsperpage'

@@ -28,6 +28,16 @@ class LogBrowser(QtWidgets.QWidget):
     self.logDates = []
     self.displayCurrentBrowserPage()
 
+  def setNumEntriesPerPage(self, numEntriesPerPage):
+    if numEntriesPerPage != self.numEntriesPerPage:
+      self.numEntriesPerPage = numEntriesPerPage
+      self.pageScrollBar.setMaximum(self.getNumPages() - 1)
+
+      # Go back to page 0
+      self.currentPageNum = 0
+      self.pageScrollBar.setValue(self.currentPageNum)
+      self.displayCurrentBrowserPage()
+
   def displayCurrentBrowserPage(self):
     if self.db is None:
       return

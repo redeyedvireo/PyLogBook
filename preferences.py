@@ -3,7 +3,11 @@ import logging
 import os.path
 from pathlib import Path
 
-from constants import kStartupLoadPreviousLog
+from constants import kStartupLoadPreviousLog, \
+                      kGeneralStartupLoad, \
+                      kEditorDefaultTextSize, \
+                      kBrowserLogsPerPage, \
+                      kEditorDefaultFontFamily
 
 class Preferences():
   def __init__(self, prefsFilePath) -> None:
@@ -11,9 +15,10 @@ class Preferences():
 
     # Default prefs
     self.prefsMap = {
-      'general-startupload': kStartupLoadPreviousLog,
-      'editor-defaulttextsize': 10,
-      'browser-logsperpage': 5
+      kGeneralStartupLoad: kStartupLoadPreviousLog,
+      kEditorDefaultTextSize: 10,
+      kEditorDefaultFontFamily: 'Arial',
+      kBrowserLogsPerPage: 5
     }
 
   def readPrefsFile(self):
@@ -27,9 +32,10 @@ class Preferences():
       try:
         configObj.read(self.prefsFilePath)
 
-        self.prefsMap['general-startupload'] = configObj['general']['startupload']
-        self.prefsMap['editor-defaulttextsize'] = configObj['editor']['defaulttextsize']
-        self.prefsMap['browser-logsperpage'] = configObj['browser']['logsperpage']
+        self.prefsMap[kGeneralStartupLoad] = configObj['general']['startupload']
+        self.prefsMap[kEditorDefaultTextSize] = int(configObj['editor']['defaulttextsize'])
+        self.prefsMap[kBrowserLogsPerPage] = int(configObj['browser']['logsperpage'])
+        self.prefsMap[kEditorDefaultFontFamily] = configObj['browser']['defaultfontfamily']
 
       except Exception as inst:
         errMsg = "Exception: {}".format(inst)
@@ -71,3 +77,21 @@ class Preferences():
       errMsg = "Writing prefs file: {}".format(inst)
       print(errMsg)
       logging.error(f'[writePrefsFile] {errMsg}')
+
+  def getEditorDefaultFontSize(self) -> int:
+    return self.prefsMap[kEditorDefaultTextSize]
+
+  def setEditorDefaultFontSize(self, fontSize: int):
+    self.prefsMap[kEditorDefaultTextSize] = fontSize
+
+  def getEditorDefaultFontFamily(self) -> str:
+    return self.prefsMap[kEditorDefaultFontFamily]
+
+  def setEditorDefaultFontFamily(self, fontFamily: str):
+    self.prefsMap[kEditorDefaultFontFamily] = fontFamily
+
+  def getNumEntriesPerPage(self) -> int:
+    return self.prefsMap[kBrowserLogsPerPage]
+
+  def setNumEntriesPerPage(self, numEntriesPerPage: int):
+    self.prefsMap[kBrowserLogsPerPage] = numEntriesPerPage
