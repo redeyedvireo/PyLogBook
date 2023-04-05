@@ -4,6 +4,7 @@ import os.path
 from pathlib import Path
 
 from constants import kStartupLoadPreviousLog, \
+                      kStartupEmptyWorkspace, \
                       kGeneralStartupLoad, \
                       kEditorDefaultTextSize, \
                       kBrowserLogsPerPage, \
@@ -77,6 +78,15 @@ class Preferences():
       errMsg = "Writing prefs file: {}".format(inst)
       print(errMsg)
       logging.error(f'[writePrefsFile] {errMsg}')
+
+  def getStartupAction(self) -> str:
+    return self.prefsMap[kGeneralStartupLoad]
+
+  def setStartupAction(self, action: str):
+    if action == kStartupEmptyWorkspace:
+      self.prefsMap[kGeneralStartupLoad] = kStartupEmptyWorkspace
+    else:
+      self.prefsMap[kGeneralStartupLoad] = kStartupLoadPreviousLog
 
   def getEditorDefaultFontSize(self) -> int:
     return self.prefsMap[kEditorDefaultTextSize]

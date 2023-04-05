@@ -400,9 +400,10 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
 
   @QtCore.pyqtSlot()
   def on_actionPreferences_triggered(self):
-    prefsDialog = PrefsDialog(self)
+    prefsDialog = PrefsDialog(self, self.prefs)
     if prefsDialog.exec() == QtWidgets.QDialog.Accepted:
-      print('OK selected')
+      self.prefs.writePrefsFile()
+      self.logBrowser.setNumEntriesPerPage(self.prefs.getNumEntriesPerPage())
 
   @QtCore.pyqtSlot()
   def on_actionAbout_Qt_triggered(self):

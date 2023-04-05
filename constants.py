@@ -10,6 +10,7 @@ kSaltFieldName = 'salt'
 
 # Prefs constants
 kPrefsFileName = 'PyLogBook.ini'
+kStartupEmptyWorkspace = 'empty'
 kStartupLoadPreviousLog = 'loadprevious'        # Load previous log file when starting up
 
 kGeneralStartupLoad = 'general-startupload'
