@@ -8,7 +8,9 @@ from constants import kStartupLoadPreviousLog, \
                       kGeneralStartupLoad, \
                       kEditorDefaultTextSize, \
                       kBrowserLogsPerPage, \
-                      kEditorDefaultFontFamily
+                      kEditorDefaultFontFamily, \
+                      kFilesLastLogDirectory, \
+                      kFilesLastLogFile
 
 class Preferences():
   def __init__(self, prefsFilePath) -> None:
@@ -19,8 +21,20 @@ class Preferences():
       kGeneralStartupLoad: kStartupLoadPreviousLog,
       kEditorDefaultTextSize: 10,
       kEditorDefaultFontFamily: 'Arial',
-      kBrowserLogsPerPage: 5
+      kBrowserLogsPerPage: 5,
+      kFilesLastLogDirectory: '',
+      kFilesLastLogFile: ''
     }
+
+  def setLogFilePath(self, logFilePath):
+    self.prefsMap[kFilesLastLogDirectory] = os.path.dirname(logFilePath)
+    self.prefsMap[kFilesLastLogFile] = os.path.basename(logFilePath)
+
+  def getPreviousLogFilePath(self) -> tuple[str, str] | None:
+    if len(self.prefsMap[kFilesLastLogDirectory]) > 0 and len(self.prefsMap[kFilesLastLogFile]) > 0:
+      return (self.prefsMap[kFilesLastLogDirectory], self.prefsMap[kFilesLastLogFile])
+    else:
+      return None
 
   def readPrefsFile(self):
     """ Reads the prefs from the prefs INI file. """
@@ -33,10 +47,12 @@ class Preferences():
       try:
         configObj.read(self.prefsFilePath)
 
-        self.prefsMap[kGeneralStartupLoad] = configObj['general']['startupload']
-        self.prefsMap[kEditorDefaultTextSize] = int(configObj['editor']['defaulttextsize'])
-        self.prefsMap[kBrowserLogsPerPage] = int(configObj['browser']['logsperpage'])
-        self.prefsMap[kEditorDefaultFontFamily] = configObj['browser']['defaultfontfamily']
+        self.prefsMap[kGeneralStartupLoad] = configObj.get('general', 'startupload', fallback=kStartupEmptyWorkspace)
+        self.prefsMap[kEditorDefaultTextSize] = configObj.getint('editor', 'defaulttextsize', fallback=10)
+        self.prefsMap[kBrowserLogsPerPage] = configObj.getint('browser', 'logsperpage', fallback=5)
+        self.prefsMap[kEditorDefaultFontFamily] = configObj.get('browser', 'defaultfontfamily', fallback='Arial')
+        self.prefsMap[kFilesLastLogDirectory] = configObj.get('files', 'lastlogdirectory', fallback='')
+        self.prefsMap[kFilesLastLogFile] = configObj.get('files', 'lastlogfile', fallback='')
 
       except Exception as inst:
         errMsg = "Exception: {}".format(inst)
@@ -81,6 +97,12 @@ class Preferences():
 
   def getStartupAction(self) -> str:
     return self.prefsMap[kGeneralStartupLoad]
+
+  def openPreviousLogOnStartup(self) -> bool:
+    """ A convenience function for determining if the previous log file should be
+        opened upon startup.
+    """
+    return self.prefsMap[kGeneralStartupLoad] == kStartupLoadPreviousLog
 
   def setStartupAction(self, action: str):
     if action == kStartupEmptyWorkspace:

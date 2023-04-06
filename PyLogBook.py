@@ -59,6 +59,18 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
 
     self.logBrowser.setNumEntriesPerPage(self.prefs.getNumEntriesPerPage())
 
+    if self.prefs.openPreviousLogOnStartup():
+      logFileTuple = self.prefs.getPreviousLogFilePath()
+      if logFileTuple is not None:
+        logFileDir, logFileName = logFileTuple
+        self.databaseFileName = logFileName
+        self.logDir = logFileDir
+
+        if not self.openLogFile():
+          self.enableLogEntry(False)
+      return
+
+    # Just show an empty workspace
     # Disable log entry until a log file is either loaded or created.
     self.enableLogEntry(False)
 
@@ -95,6 +107,7 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
         self.setInitialEntryToDisplay()
         self.setInitialBrowserEntries()
         self.setAppTitle()
+        self.prefs.setLogFilePath(self.getDatabasePath())
         return True
       else:
         return False
@@ -478,7 +491,7 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
   def closeAppWindow(self):
     logging.info('Closing app window...')
     self.closeLogFile()
-    # self.saveSettings()
+    self.prefs.writePrefsFile()
 
 def shutdownApp():
   logging.info("Shutting down...")
