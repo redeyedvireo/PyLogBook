@@ -1,3 +1,4 @@
+from PyQt5 import QtCore
 import configparser
 import logging
 import os.path
@@ -10,7 +11,9 @@ from constants import kStartupLoadPreviousLog, \
                       kBrowserLogsPerPage, \
                       kEditorDefaultFontFamily, \
                       kFilesLastLogDirectory, \
-                      kFilesLastLogFile
+                      kFilesLastLogFile, \
+                      kWindowSize, \
+                      kWindowPos
 
 class Preferences():
   def __init__(self, prefsFilePath) -> None:
@@ -23,7 +26,9 @@ class Preferences():
       kEditorDefaultFontFamily: 'Arial',
       kBrowserLogsPerPage: 5,
       kFilesLastLogDirectory: '',
-      kFilesLastLogFile: ''
+      kFilesLastLogFile: '',
+      kWindowSize: '',
+      kWindowPos: ''
     }
 
   def setLogFilePath(self, logFilePath):
@@ -53,6 +58,8 @@ class Preferences():
         self.prefsMap[kEditorDefaultFontFamily] = configObj.get('browser', 'defaultfontfamily', fallback='Arial')
         self.prefsMap[kFilesLastLogDirectory] = configObj.get('files', 'lastlogdirectory', fallback='')
         self.prefsMap[kFilesLastLogFile] = configObj.get('files', 'lastlogfile', fallback='')
+        self.prefsMap[kWindowPos] = configObj.get('window', 'pos', fallback='')
+        self.prefsMap[kWindowSize] = configObj.get('window', 'size', fallback='')
 
       except Exception as inst:
         errMsg = "Exception: {}".format(inst)
@@ -127,3 +134,23 @@ class Preferences():
 
   def setNumEntriesPerPage(self, numEntriesPerPage: int):
     self.prefsMap[kBrowserLogsPerPage] = numEntriesPerPage
+
+  def getWindowSize(self) -> QtCore.QSize | None:
+    if kWindowSize in self.prefsMap and len(self.prefsMap[kWindowSize]):
+      width, height = self.prefsMap[kWindowSize].split(',')
+      return QtCore.QSize(int(width), int(height))
+
+    return None
+
+  def setWindowSize(self, size: QtCore.QSize):
+    self.prefsMap[kWindowSize] = f'{size.width()},{size.height()}'
+
+  def getWindowPos(self) -> QtCore.QPoint | None:
+    if kWindowPos in self.prefsMap and len(self.prefsMap[kWindowPos]):
+      x, y = self.prefsMap[kWindowPos].split(',')
+      return QtCore.QPoint(int(x), int(y))
+
+    return None
+
+  def setWindowPos(self, pos: QtCore.QPoint):
+    self.prefsMap[kWindowPos] = f'{pos.x()},{pos.y()}'

@@ -2,7 +2,6 @@
 
 These are roughly in order of priority.
 
-- Implement saving of window size and position in the prefs file.
 - Implement font family and size buttons in the editor
 - Implement Search
 - Implement Addendum button

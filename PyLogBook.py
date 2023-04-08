@@ -57,6 +57,15 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
 
     self.prefs.readPrefsFile()
 
+    pos = self.prefs.getWindowPos()
+    size = self.prefs.getWindowSize()
+
+    if pos is not None:
+      self.move(pos)
+
+    if size is not None:
+      self.resize(size)
+
     self.logBrowser.setNumEntriesPerPage(self.prefs.getNumEntriesPerPage())
 
     if self.prefs.openPreviousLogOnStartup():
@@ -491,6 +500,8 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
   def closeAppWindow(self):
     logging.info('Closing app window...')
     self.closeLogFile()
+    self.prefs.setWindowPos(self.pos())
+    self.prefs.setWindowSize(self.size())
     self.prefs.writePrefsFile()
 
 def shutdownApp():
