@@ -162,7 +162,7 @@ class RichTextEditWidget(QtWidgets.QWidget):
       self.fontCombo.setCurrentIndex(index)
 
     fontSize = selectionFormat.fontPointSize()
-    fontSizeStr = f'{fontSize}'
+    fontSizeStr = f'{int(fontSize)}'
     index = self.sizeCombo.findText(fontSizeStr)
     if index != -1:
       self.sizeCombo.setCurrentIndex(index)
@@ -280,7 +280,7 @@ class RichTextEditWidget(QtWidgets.QWidget):
     selectionCursor, selectionFormat = self.getCursorAndSelectionFormat()
 
     tempCharFormat = QtGui.QTextCharFormat()
-    if selectionFormat.fontWeight != QtGui.QFont.Weight.Bold:
+    if selectionFormat.fontWeight() != QtGui.QFont.Weight.Bold:
       tempCharFormat.setFontWeight(QtGui.QFont.Weight.Bold)
     else:
       tempCharFormat.setFontWeight(QtGui.QFont.Weight.Normal)
@@ -355,3 +355,27 @@ class RichTextEditWidget(QtWidgets.QWidget):
     newListFormat.setStyle(QtGui.QTextListFormat.Style.ListDecimal)
 
     selectionCursor.createList(newListFormat)
+
+  @QtCore.pyqtSlot(str)
+  def on_fontCombo_activated(self, text):
+    # selectionCursor, selectionFormat = self.getCursorAndSelectionFormat()
+    selectionCursor = self.textEdit.textCursor()
+
+    # selectionFormat.setFontFamily(text)
+    # selectionCursor.setCharFormat(selectionFormat)
+    tempCharFormat = QtGui.QTextCharFormat()
+    tempCharFormat.setFontFamily(text)
+    selectionCursor.mergeCharFormat(tempCharFormat)
+
+    self.textEdit.setTextCursor(selectionCursor)
+
+  def on_sizeCombo_activated(self, text):
+    selectionCursor, selectionFormat = self.getCursorAndSelectionFormat()
+
+    newFontSize = int(text)
+
+    tempCharFormat = QtGui.QTextCharFormat()
+    tempCharFormat.setFontPointSize(newFontSize)
+    selectionCursor.mergeCharFormat(tempCharFormat)
+
+    self.textEdit.setTextCursor(selectionCursor)
