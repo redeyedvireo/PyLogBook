@@ -179,8 +179,13 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
     if platform.system() == 'Windows':
       appDataDir = os.getenv('APPDATA', scriptPath)
       return os.path.normpath(os.path.join(appDataDir, kAppName, kPrefsFileName))
-    else:
+    elif platform.system() == 'Linux':
+      homeDirObj = Path.home()
+      prefsFileObj = homeDirObj / kPrefsFileName
       print('Prefs file not yet supported on non-Windows systems.')
+      return os.fspath(prefsFileObj)
+    else:
+      print('[getPrefsPath] Only Windows and Linux are currently supported')
       return ''
 
   def setAppTitle(self):
