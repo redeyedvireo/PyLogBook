@@ -181,8 +181,8 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
       return os.path.normpath(os.path.join(appDataDir, kAppName, kPrefsFileName))
     elif platform.system() == 'Linux':
       homeDirObj = Path.home()
-      prefsFileObj = homeDirObj / kPrefsFileName
-      print('Prefs file not yet supported on non-Windows systems.')
+      prefsFileObj = homeDirObj / '.pylogbook' / kPrefsFileName
+      print(f'Prefs path: {prefsFileObj}')
       return os.fspath(prefsFileObj)
     else:
       print('[getPrefsPath] Only Windows and Linux are currently supported')
