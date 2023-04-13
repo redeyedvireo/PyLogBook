@@ -17,6 +17,8 @@ from preferences import Preferences
 from prefs_dialog import PrefsDialog
 from utility import dateToJulianDay, formatDate, formatDateTime, julianDayToDate
 
+from xml_file import XmlHandler
+
 kLogFile = 'PyLogBook.log'
 kAppName = 'PyLogBook'
 
@@ -420,6 +422,24 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
   @QtCore.pyqtSlot()
   def on_actionClose_triggered(self):
     self.closeLogFile()
+
+  @QtCore.pyqtSlot()
+  def on_actionImport_XML_triggered(self):
+    filepathTuple = QtWidgets.QFileDialog.getOpenFileName(self,
+                                                          "LogBook - Import Log File XML",
+                                                          self.logDir,
+                                                          'Log XML files (*.xml)')
+
+    if len(filepathTuple[0]) > 0:
+      xmlHandler = XmlHandler(self.db)
+      if xmlHandler.importLogFile(filepathTuple[0]):
+        print('File imported Ok')
+      else:
+        print('Error importing file')
+
+  @QtCore.pyqtSlot()
+  def on_actionExport_XML_triggered(self):
+    print('Export XML triggered')
 
   @QtCore.pyqtSlot()
   def on_actionExit_triggered(self):
