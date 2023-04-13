@@ -432,8 +432,15 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
 
     if len(filepathTuple[0]) > 0:
       xmlHandler = XmlHandler(self.db)
-      if xmlHandler.importLogFile(filepathTuple[0]):
-        print('File imported Ok')
+      success, entryIds, earliestDate, latestDate = xmlHandler.importLogFile(filepathTuple[0])
+      if success:
+        # TODO: Show a dialog indicating number entries imported, from start date to end date
+        # TODO: The import function should return a list of entryIDs, so they can be sent to the log tree, calendar,
+        #       and log browser.
+        entryDates = [ julianDayToDate(d) for d in entryIds ]
+        self.logEntryTree.addLogDates(entryDates)
+        self.curMonth.addLogDates(entryDates)
+        self.logBrowser.addDates(entryDates)
       else:
         print('Error importing file')
 

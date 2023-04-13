@@ -24,6 +24,10 @@ class CCalendar(QtWidgets.QCalendarWidget):
       self.logDates.append(date)
       self.update()
 
+  def addLogDates(self, dates: list[datetime.date]):
+    for date in dates:
+      self.addLogDate(date)
+
   def setCurrentDate(self, date: datetime.date):
     qtDate = QtCore.QDate(date.year, date.month, date.day)
     self.setSelectedDate(qtDate)

@@ -74,6 +74,18 @@ class LogBrowser(QtWidgets.QWidget):
       self.displayCurrentBrowserPage()
       self.updateNumberOfPagesLabel()
 
+  def addDates(self, dates: list[datetime.date]):
+    for date in dates:
+      if date not in self.logDates:
+        self.logDates.append(date)
+
+    self.logDates.sort()
+
+    self.pageSpin.setMaximum(self.getNumPages())
+
+    self.displayCurrentBrowserPage()
+    self.updateNumberOfPagesLabel()
+
   def setDateList(self, dateList: list[datetime.date]) -> None:
     self.logDates = dateList
 

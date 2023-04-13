@@ -50,6 +50,10 @@ class CLogEntryTree(QtWidgets.QTreeWidget):
       # In this case, turn off the italic
       self.setItemItalic(item, False)
 
+  def addLogDates(self, dates: list[datetime.date]):
+    for date in dates:
+      self.addLogDate(date)
+
   def setCurrentDate(self, date: datetime.date):
     item = self.findEntryByDate(date)
 
