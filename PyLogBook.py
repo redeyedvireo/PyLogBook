@@ -441,6 +441,9 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
         self.logEntryTree.addLogDates(entryDates)
         self.curMonth.addLogDates(entryDates)
         self.logBrowser.addDates(entryDates)
+
+        msg = f'{len(entryDates)} log imported.\nDate range {formatDate(earliestDate)} to {formatDate(latestDate)}'
+        QtWidgets.QMessageBox.information(self, 'Logs imported', msg)
       else:
         print('Error importing file')
 
