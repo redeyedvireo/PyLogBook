@@ -1,11 +1,15 @@
 import datetime
+import logging
 import xml.etree.ElementTree as ET
+from database import Database
 from log_entry import LogEntry
 
-from utility import formatDate, formatDateTime, julianDayToDate
+from utility import dateToJulianDay, formatDate, formatDateTime, julianDayToDate
+
+from constants import kLogEntryRoot, kLogEntry, kLogEntryId, kNumModifications, kLastModifiedDateTime, kTags, kLogEntryData
 
 class XmlHandler:
-  def __init__(self, db) -> None:
+  def __init__(self, db: Database) -> None:
     self.db = db
 
   def importLogFile(self, xmlLogFilePath) -> tuple[bool, list[int], datetime.date, datetime.date]:
@@ -29,10 +33,10 @@ class XmlHandler:
     return (True, entryIds, julianDayToDate(earliestEntry), julianDayToDate(latestEntry))
 
   def readLogEntry(self, logEntryElement) -> int | None:
-    entryId = int(logEntryElement.attrib['LogEntryID'])
+    entryId = int(logEntryElement.attrib[kLogEntryId])
     entryDate = julianDayToDate(entryId)
-    numModifications = int(logEntryElement.attrib['NumModifications'])
-    lastModifiedDateTimeTimestamp = int(logEntryElement.attrib['LastModifiedDateTime'])
+    numModifications = int(logEntryElement.attrib[kNumModifications])
+    lastModifiedDateTimeTimestamp = int(logEntryElement.attrib[kLastModifiedDateTime])
     lastModifiedDateTime = datetime.datetime.fromtimestamp(lastModifiedDateTimeTimestamp)
 
     # print(f'Entry ID: {entryId} ({formatDate(entryDate)}), Num modifications: {numModifications}, Last modified datetime: {formatDateTime(lastModifiedDateTime)}')
@@ -49,6 +53,40 @@ class XmlHandler:
 
     return returnedEntryIdOrNone
 
-  def exportLogFile(self, xmlPath) -> bool:
-    # TODO: Implement
-    return False
+  def exportLogFile(self, xmlPath: str) -> bool:
+    logEntryDates = self.db.getEntryDates()
+
+    root = ET.Element(kLogEntryRoot)
+
+    for logEntryDate in logEntryDates:
+      logEntry = self.db.getLogEntry(dateToJulianDay(logEntryDate))
+
+      if logEntry is not None:
+        self.addLogEntryToDom(root, logEntry)
+
+    elementTree = ET.ElementTree(root)
+
+    try:
+      elementTree.write(xmlPath, encoding='utf-8')
+    except Exception as inst:
+      logging.error(f'[exportLogFile] Exception: type: {type(inst)}')
+      logging.error(f'[exportLogFile] Exception args: {inst.args}')
+      logging.error(f'[exportLogFile] Exception object: {inst}')
+      return False
+
+    return True
+
+  def addLogEntryToDom(self, domRoot: ET.Element, logEntry: LogEntry):
+    logEntryRoot = ET.SubElement(domRoot, kLogEntry)
+
+    logEntryRoot.set(kLogEntryId, str(logEntry.entryId))
+    logEntryRoot.set(kNumModifications, str(logEntry.numModifications))
+    lastModifiedTimestamp = logEntry.lastModifiedDateTimeAsTimestamp() \
+                            if logEntry.lastModifiedDateTimeAsTimestamp() is not None else 0
+    logEntryRoot.set(kLastModifiedDateTime, str(lastModifiedTimestamp))
+
+    tagsElement = ET.SubElement(logEntryRoot, kTags)
+    tagsElement.text = logEntry.tagsAsString()
+
+    logEntryDataElement = ET.SubElement(logEntryRoot, kLogEntryData)
+    logEntryDataElement.text = logEntry.content

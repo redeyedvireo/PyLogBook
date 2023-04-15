@@ -434,9 +434,6 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
       xmlHandler = XmlHandler(self.db)
       success, entryIds, earliestDate, latestDate = xmlHandler.importLogFile(filepathTuple[0])
       if success:
-        # TODO: Show a dialog indicating number entries imported, from start date to end date
-        # TODO: The import function should return a list of entryIDs, so they can be sent to the log tree, calendar,
-        #       and log browser.
         entryDates = [ julianDayToDate(d) for d in entryIds ]
         self.logEntryTree.addLogDates(entryDates)
         self.curMonth.addLogDates(entryDates)
@@ -449,7 +446,20 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
 
   @QtCore.pyqtSlot()
   def on_actionExport_XML_triggered(self):
-    print('Export XML triggered')
+    filepathTuple = QtWidgets.QFileDialog.getSaveFileName(self,
+                                                          "LogBook - Export Log File XML",
+                                                          self.logDir,
+                                                          'Log XML files (*.xml)')
+
+    if len(filepathTuple[0]) > 0:
+      filepath = filepathTuple[0]
+      xmlHandler = XmlHandler(self.db)
+      success = xmlHandler.exportLogFile(filepath)
+
+      if success:
+        QtWidgets.QMessageBox.information(self, 'Log Export', 'Exported to XML successfully.')
+      else:
+        QtWidgets.QMessageBox.information(self, 'Log Export', 'An error occurred exporting to XML.')
 
   @QtCore.pyqtSlot()
   def on_actionExit_triggered(self):

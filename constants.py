@@ -21,3 +21,12 @@ kFilesLastLogDirectory = 'files-lastlogdirectory'
 kFilesLastLogFile = 'files-lastlogfile'
 kWindowSize = 'window-size'
 kWindowPos = 'window-pos'
+
+# XML Import/Export
+kLogEntryRoot = 'LogEntryRoot'
+kLogEntry = 'LogEntry'
+kLogEntryId = 'LogEntryID'
+kNumModifications = 'NumModifications'
+kLastModifiedDateTime = 'LastModifiedDateTime'
+kTags = 'Tags'
+kLogEntryData = 'LogEntryData'
