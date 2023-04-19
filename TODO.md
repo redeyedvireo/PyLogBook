@@ -8,6 +8,7 @@ These are roughly in order of priority.
   - Maybe place the log viewer in a stacked view with the log editor
 - Implement font family buttons in the editor
   - Figure out why font cannot be set in the document.
+- Implement Style button
 - Implement Search, but do this as a modeless dialog, rather than as a pane in the app window.
 - Implement Addendum button
 - Make the log tree able to grow vertically
