@@ -1,3 +1,5 @@
+from typing import Any
+import logging
 from PyQt5 import QtCore
 import os.path
 import time
@@ -32,3 +34,23 @@ def bytesToQByteArray(data: bytes) -> QtCore.QByteArray:
 
 def qByteArrayToBytes(data: QtCore.QByteArray) -> bytes:
   return bytes(data, 'utf-8')
+
+def unknownToBytes(data: Any) -> bytes:
+  if data is not None:
+    try:
+      if isinstance(data, QtCore.QByteArray):
+        if data.length() > 0:
+          return qByteArrayToBytes(data)
+        else:
+          return b''
+      elif isinstance(data, bytes):
+        return data
+      elif isinstance(data, str):
+        return bytes(data, 'utf-8')
+      else:
+        return bytes(data)
+    except:
+      logging.error(f'Data conversion error on: "{data}"')
+      return b''
+  else:
+    return b''

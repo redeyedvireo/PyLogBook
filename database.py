@@ -5,7 +5,7 @@ import datetime
 
 from encrypter import Encrypter
 from log_entry import LogEntry
-from utility import bytesToQByteArray, dateToJulianDay, julianDayToDate, qByteArrayToBytes
+from utility import bytesToQByteArray, dateToJulianDay, julianDayToDate, qByteArrayToBytes, unknownToBytes
 
 from constants import kTempItemId, kHashedPwFieldName, kSaltFieldName
 
@@ -462,7 +462,7 @@ class Database:
         logEntry.setTagsFromString(self.encrypter.decrypt(bytes(tagsData)))
       else:
         logEntry.content = bytes(contentData).decode()
-        logEntry.setTagsFromString(bytes(tagsData).decode())
+        logEntry.setTagsFromString(unknownToBytes(tagsData).decode())
 
       logEntry.entryId = entryId
       logEntry.lastModifiedDateTime = lastModifiedDate
