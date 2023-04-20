@@ -1,4 +1,7 @@
 from PyQt5 import uic, QtCore, QtGui, QtWidgets
+import datetime
+
+from utility import formatDateTime
 
 class RichTextEditWidget(QtWidgets.QWidget):
   logTextChangedSignal = QtCore.pyqtSignal()
@@ -207,6 +210,13 @@ class RichTextEditWidget(QtWidgets.QWidget):
     blockFormat = selectionCursor.blockFormat()
     return (selectionCursor, blockFormat)
 
+  def addAddendum(self):
+    textCursor = self.textEdit.textCursor()
+
+    textCursor.movePosition(QtGui.QTextCursor.MoveOperation.End, QtGui.QTextCursor.MoveMode.MoveAnchor)
+
+    self.textEdit.insertHtml(f'<br><hr />Addendum {formatDateTime(datetime.datetime.now())}<br>')
+
 
   # Slots
 
@@ -358,14 +368,18 @@ class RichTextEditWidget(QtWidgets.QWidget):
 
   @QtCore.pyqtSlot(str)
   def on_fontCombo_activated(self, text):
+    self.populatePointSizesCombo()
+
     # selectionCursor, selectionFormat = self.getCursorAndSelectionFormat()
     selectionCursor = self.textEdit.textCursor()
+    selectionFormat = selectionCursor.charFormat()
 
-    # selectionFormat.setFontFamily(text)
-    # selectionCursor.setCharFormat(selectionFormat)
-    tempCharFormat = QtGui.QTextCharFormat()
-    tempCharFormat.setFontFamily(text)
-    selectionCursor.mergeCharFormat(tempCharFormat)
+    selectionFormat.setFontFamily(text)
+    selectionCursor.setCharFormat(selectionFormat)
+
+    # tempCharFormat = QtGui.QTextCharFormat()
+    # tempCharFormat.setFontFamily(text)
+    # selectionCursor.mergeCharFormat(tempCharFormat)
 
     self.textEdit.setTextCursor(selectionCursor)
 

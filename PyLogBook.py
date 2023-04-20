@@ -57,6 +57,10 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
   def initialize(self):
     logging.info("Starting application...")
 
+    # Disallow deleting log entries.  In the future, might want to have a
+    # preference that allows entries to be deleted.
+    self.deleteButton.hide()
+
     self.prefs.readPrefsFile()
 
     pos = self.prefs.getWindowPos()
@@ -365,6 +369,10 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
       self.currentDate = inDate
 
       self.displayLog(entryId)
+
+  @QtCore.pyqtSlot()
+  def on_addendumButton_clicked(self):
+    self.logEdit.addAddendum()
 
   @QtCore.pyqtSlot()
   def on_actionNew_Log_File_triggered(self):
