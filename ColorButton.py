@@ -27,6 +27,9 @@ class CColorButton(QtWidgets.QToolButton):
     self.m_noColorAction.triggered.connect(self.onNoColorActionTriggered)
 
 
+  def getColor(self) -> QtGui.QColor:
+    return self.m_color
+
   def setColor(self, color):
     self.m_color = color
     self.m_hasColor = True

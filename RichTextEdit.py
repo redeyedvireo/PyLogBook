@@ -1,6 +1,8 @@
 from PyQt5 import uic, QtCore, QtGui, QtWidgets
 import datetime
 
+from select_style_dlg import SelectStyleDialog
+from style_manager import StyleManager
 from utility import formatDateTime
 
 class RichTextEditWidget(QtWidgets.QWidget):
@@ -10,6 +12,8 @@ class RichTextEditWidget(QtWidgets.QWidget):
 
     super(RichTextEditWidget, self).__init__(parent)
     uic.loadUi('RichTextEdit.ui', self)
+
+    self.styleManager = StyleManager()
 
     # Load icons explicityly, as they don't want to load automatically
     self.leftAlignButton.setIcon(QtGui.QIcon('Resources/Left.png'))
@@ -383,6 +387,7 @@ class RichTextEditWidget(QtWidgets.QWidget):
 
     self.textEdit.setTextCursor(selectionCursor)
 
+  @QtCore.pyqtSlot(str)
   def on_sizeCombo_activated(self, text):
     selectionCursor, selectionFormat = self.getCursorAndSelectionFormat()
 
@@ -393,3 +398,11 @@ class RichTextEditWidget(QtWidgets.QWidget):
     selectionCursor.mergeCharFormat(tempCharFormat)
 
     self.textEdit.setTextCursor(selectionCursor)
+
+  @QtCore.pyqtSlot()
+  def on_styleButton_clicked(self):
+    print('Style button clicked')
+    styleDlg = SelectStyleDialog(self, self.styleManager)
+    if styleDlg.exec() == QtWidgets.QDialog.Accepted:
+      self.styleManager.applyStyle()
+      self.initStyleButton()
