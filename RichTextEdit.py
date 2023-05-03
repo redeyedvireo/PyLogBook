@@ -404,5 +404,8 @@ class RichTextEditWidget(QtWidgets.QWidget):
     print('Style button clicked')
     styleDlg = SelectStyleDialog(self, self.styleManager)
     if styleDlg.exec() == QtWidgets.QDialog.Accepted:
-      self.styleManager.applyStyle()
-      self.initStyleButton()
+      styleId = styleDlg.getSelectedStyle()
+
+      if styleId is not None:
+        self.styleManager.applyStyle(self.textEdit, styleId)
+        self.initStyleButton()

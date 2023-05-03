@@ -2,7 +2,7 @@ from PyQt5 import uic, QtCore, QtGui, QtWidgets
 from styleDef import StyleDef
 from style_dlg import StyleDlg
 
-from style_manager import StyleManager
+from style_manager import StyleManager, kUserStyleStartIndex
 
 class SelectStyleDialog(QtWidgets.QDialog):
   def __init__(self, parent, styleManager: StyleManager):
@@ -23,20 +23,41 @@ class SelectStyleDialog(QtWidgets.QDialog):
     styleIds = self.styleManager.getStyleIds()
 
     for styleId in styleIds:
-      self.addStyle(self.styleManager.getStyle(styleId).strName, styleId)
+      styleDefOrNone = self.styleManager.getStyle(styleId)
+      if styleDefOrNone is not None:
+        self.addStyle(styleDefOrNone.strName, styleId)
 
   def addStyle(self, styleName: str, styleId: int) -> None:
     item = QtWidgets.QListWidgetItem(styleName)
     item.setData(QtCore.Qt.ItemDataRole.UserRole, styleId)
     self.styleList.addItem(item)
 
+  def getStyleIdForRow(self, row: int) -> int:
+    item = self.styleList.item(row)
+    itemVar = item.data(QtCore.Qt.ItemDataRole.UserRole)
+
+    return int(itemVar)
+
+  def getSelectedStyle(self) -> int | None:
+    curRow = self.styleList.currentRow()
+    if curRow > -1:
+      return self.getStyleIdForRow(curRow)
+    else:
+      return None
+
 
   # ************* SLOTS *************
 
   @QtCore.pyqtSlot(int)
   def on_styleList_currentRowChanged(self, currentRow) -> None:
-    # TODO: Implement
-    print('on_styleList_currentRowChanged')
+    styleDef = self.styleManager.getStyle(self.getStyleIdForRow(currentRow))
+
+    if styleDef is not None:
+      self.descriptionEdit.setText(styleDef.strDescription)
+
+      # Disable Edit and Delete buttons for the first two (built-in) styles
+      self.editButton.setEnabled(currentRow >= kUserStyleStartIndex)
+      self.deleteButton.setEnabled(currentRow >= kUserStyleStartIndex)
 
   @QtCore.pyqtSlot()
   def on_newButton_clicked(self) -> None:
@@ -54,10 +75,32 @@ class SelectStyleDialog(QtWidgets.QDialog):
 
   @QtCore.pyqtSlot()
   def on_deleteButton_clicked(self) -> None:
-    # TODO: Implement
-    print('on_deleteButton_clicked')
+    curRow = self.styleList.currentRow()
+
+    if curRow != -1:
+      styleId = self.getStyleIdForRow(curRow)
+
+      response = QtWidgets.QMessageBox.question(self, \
+                                                'Delete Style',\
+                                                f'Delete style {self.getStyleNameForRow(curRow)}')
+
+      if response == QtWidgets.QMessageBox.Yes:
+        # Delete the style
+        self.styleManager.deleteStyle(styleId)
+        self.styleList.takeItem(curRow)
 
   @QtCore.pyqtSlot()
   def on_editButton_clicked(self) -> None:
-    # TODO: Implement
-    print('on_editButton_clicked')
+    curRow = self.styleList.currentRow()
+
+    if curRow != -1:
+      styleId = self.getStyleIdForRow(curRow)
+      styleDef = self.styleManager.getStyle(styleId)
+
+      if styleDef is not None:
+        dlg = StyleDlg(self, styleDef)
+
+        if dlg.exec() == QtWidgets.QDialog.Accepted:
+          styleDef = dlg.getStyle()
+
+          self.styleManager.setStyle(styleDef, styleId)
