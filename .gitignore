@@ -6,3 +6,4 @@ build/*
 settings.json
 *.db
 *.ini
+venv/*

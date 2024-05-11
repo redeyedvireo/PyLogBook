@@ -1,0 +1,9 @@
+Dependencies, and how to install them.
+
+PyQt:
+To install:
+pip install PyQt5
+
+cryptography:
+To install:
+pip install cryptography
