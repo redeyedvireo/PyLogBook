@@ -117,16 +117,20 @@ class Preferences():
     else:
       self.prefsMap[kGeneralStartupLoad] = kStartupLoadPreviousLog
 
-  def getEditorDefaultFontSize(self) -> int:
+  @property
+  def editorDefaultFontSize(self) -> int:
     return self.prefsMap[kEditorDefaultTextSize]
 
-  def setEditorDefaultFontSize(self, fontSize: int):
+  @editorDefaultFontSize.setter
+  def editorDefaultFontSize(self, fontSize: int):
     self.prefsMap[kEditorDefaultTextSize] = fontSize
 
-  def getEditorDefaultFontFamily(self) -> str:
+  @property
+  def editorDefaultFontFamily(self) -> str:
     return self.prefsMap[kEditorDefaultFontFamily]
 
-  def setEditorDefaultFontFamily(self, fontFamily: str):
+  @editorDefaultFontFamily.setter
+  def editorDefaultFontFamily(self, fontFamily: str):
     self.prefsMap[kEditorDefaultFontFamily] = fontFamily
 
   def getNumEntriesPerPage(self) -> int:

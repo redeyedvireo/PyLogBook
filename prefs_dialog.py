@@ -25,10 +25,10 @@ class PrefsDialog(QtWidgets.QDialog):
     else:
       self.ui.loadPreviousLogRadio.setChecked(True)
 
-    self.ui.defaultTextSizeSpin.setValue(self.prefs.getEditorDefaultFontSize())
+    self.ui.defaultTextSizeSpin.setValue(self.prefs.editorDefaultFontSize)
 
     tempFont = QtGui.QFont()
-    tempFont.setFamily(self.prefs.getEditorDefaultFontFamily())
+    tempFont.setFamily(self.prefs.editorDefaultFontFamily)
 
     self.ui.logsPerPageSpin.setValue(self.prefs.getNumEntriesPerPage())
 
@@ -38,9 +38,9 @@ class PrefsDialog(QtWidgets.QDialog):
     else:
       self.prefs.setStartupAction(kStartupLoadPreviousLog)
 
-    self.prefs.setEditorDefaultFontSize(self.ui.defaultTextSizeSpin.value())
+    self.prefs.editorDefaultFontSize = self.ui.defaultTextSizeSpin.value()
 
     currentFont = self.ui.defaultFontCombo.currentFont()
-    self.prefs.setEditorDefaultFontFamily(currentFont.family())
+    self.prefs.editorDefaultFontFamily = currentFont.family()
 
     self.prefs.setNumEntriesPerPage(self.ui.logsPerPageSpin.value())
