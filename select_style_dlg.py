@@ -36,6 +36,10 @@ class SelectStyleDialog(QtWidgets.QDialog):
 
     return int(itemVar)
 
+  def getStyleNameForRow(self, row: int) -> str:
+    item = self.ui.styleList.item(row)
+    return item.text()
+
   def getSelectedStyle(self) -> int | None:
     curRow = self.ui.styleList.currentRow()
     if curRow > -1:
@@ -65,7 +69,7 @@ class SelectStyleDialog(QtWidgets.QDialog):
 
     dlg = StyleDlg(self, styleDef)
 
-    if dlg.exec() == QtWidgets.QDialog.Accepted:
+    if dlg.exec() == QtWidgets.QDialog.DialogCode.Accepted:
       styleDef = dlg.getStyle()
       styleId = self.styleManager.addStyle(styleDef)
 
@@ -85,7 +89,7 @@ class SelectStyleDialog(QtWidgets.QDialog):
       if response == QtWidgets.QMessageBox.StandardButton.Yes:
         # Delete the style
         self.styleManager.deleteStyle(styleId)
-        self.styleList.takeItem(curRow)
+        self.ui.styleList.takeItem(curRow)
 
   @QtCore.Slot()
   def on_editButton_clicked(self) -> None:
@@ -98,7 +102,7 @@ class SelectStyleDialog(QtWidgets.QDialog):
       if styleDef is not None:
         dlg = StyleDlg(self, styleDef)
 
-        if dlg.exec() == QtWidgets.QDialog.Accepted:
+        if dlg.exec() == QtWidgets.QDialog.DialogCode.Accepted:
           styleDef = dlg.getStyle()
 
           self.styleManager.setStyle(styleDef, styleId)

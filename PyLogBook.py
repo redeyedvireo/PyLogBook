@@ -8,6 +8,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 from PySide6 import QtCore, QtGui, QtWidgets
 
+from style_manager import StyleManager
 from ui_PyLogBookWindow import Ui_PyLogBookWindow
 
 from SetPasswordDialog import SetPasswordDialog
@@ -23,6 +24,7 @@ from xml_file import XmlHandler
 
 kLogFile = 'PyLogBook.log'
 kAppName = 'PyLogBook'
+kStyleDefsFileName = 'Styles.xml'
 
 kMaxLogileSize = 1024 * 1024
 
@@ -61,6 +63,8 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
   def initialize(self):
     logging.info("Starting application...")
 
+    self.styleManager = StyleManager()
+
     # Disallow deleting log entries.  In the future, might want to have a
     # preference that allows entries to be deleted.
     self.ui.deleteButton.hide()
@@ -75,6 +79,8 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
 
     if size is not None:
       self.resize(size)
+
+    self.ui.logEdit.initialize(self.prefs.editorDefaultFontFamily, self.prefs.editorDefaultFontSize, self.getStyleDefsPath(), self.styleManager)
 
     self.ui.logBrowser.setNumEntriesPerPage(self.prefs.getNumEntriesPerPage())
 
@@ -147,13 +153,16 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
       self.setAppTitle()
 
   def getDatabasePath(self) -> str:
+    # TODO: Move this to a common location, along with getPrefsPath and getDatabasePath.
     return os.path.normpath(os.path.join(self.getDatabaseDirectory(), self.databaseFileName))
 
   def getDatabaseDirectory(self):
+    # TODO: Move this to a common location, along with getPrefsPath and getDatabasePath.
     return self.logDir
 
   def getPrefsPath(self) -> str:
     """ Returns the full path to the prefs file. """
+    # TODO: Move this to a common location, along with getPrefsPath and getDatabasePath.
     if platform.system() == 'Windows':
       appDataDir = os.getenv('APPDATA', scriptPath)
       return os.path.normpath(os.path.join(appDataDir, kAppName, kPrefsFileName))
@@ -164,6 +173,24 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
       return os.fspath(prefsFileObj)
     else:
       print('[getPrefsPath] Only Windows and Linux are currently supported')
+      return ''
+
+  def getStyleDefsPath(self) -> str:
+    """ Returns the full path to the style defs file.
+        For now, this will be in the same directory as the prefs file (ie, the app data directory), but
+        eventually, this will be user locatable, so that other apps (such as PyLogBook) can use the same styles.
+    """
+    # TODO: Move this to a common location, along with getPrefsPath and getDatabasePath.
+    if platform.system() == 'Windows':
+      appDataDir = os.getenv('APPDATA', scriptPath)
+      return os.path.normpath(os.path.join(appDataDir, kAppName, kStyleDefsFileName))
+    elif platform.system() == 'Linux':
+      homeDirObj = Path.home()
+      prefsFileObj = homeDirObj / '.pylogbook' / kStyleDefsFileName
+      print(f'Style defs path: {prefsFileObj}')
+      return os.fspath(prefsFileObj)
+    else:
+      print('[getStyleDefsPath] Only Windows and Linux are currently supported')
       return ''
 
   def setAppTitle(self):
@@ -360,7 +387,7 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
 
       password = ''
       dlg = SetPasswordDialog(self)
-      if dlg.exec() == QtWidgets.QDialog.Accepted:
+      if dlg.exec() == QtWidgets.QDialog.DialogCode.Accepted:
         password = dlg.getPassword()
 
       self.db.open(filepath)
@@ -448,7 +475,7 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
   @QtCore.Slot()
   def on_actionPreferences_triggered(self):
     prefsDialog = PrefsDialog(self, self.prefs)
-    if prefsDialog.exec() == QtWidgets.QDialog.Accepted:
+    if prefsDialog.exec() == QtWidgets.QDialog.DialogCode.Accepted:
       self.prefs.writePrefsFile()
       self.ui.logBrowser.setNumEntriesPerPage(self.prefs.getNumEntriesPerPage())
 
@@ -528,6 +555,9 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
     self.prefs.setWindowPos(self.pos())
     self.prefs.setWindowSize(self.size())
     self.prefs.writePrefsFile()
+
+    # Save style defs
+    self.styleManager.saveStyleDefs(self.getStyleDefsPath())
 
 def shutdownApp():
   logging.info("Shutting down...")

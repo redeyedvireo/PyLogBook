@@ -26,8 +26,6 @@ class RichTextEditWidget(QtWidgets.QWidget):
 
     self.styleMenu = QtWidgets.QMenu()
 
-    self.initStyleButton()
-
     # Connect signals
     self.ui.textColorButton.colorChangedSignal.connect(self.onTextColorChanged)
     self.ui.textColorButton.noColorSignal.connect(self.onTextColorNoColor)
@@ -62,23 +60,28 @@ class RichTextEditWidget(QtWidgets.QWidget):
     # TODO: Should add a way for the user to import/export the style settings.
     self.styleMenu.clear()
 
-    # Add some hard-coded styles for debugging, but eventually, all styles will come from the styles.xml file.
-    # NEW! The action will have the style ID stored as its data item.  (In the C++ version, a signal mapper was used,
-    #      but the Qt docs say that signal mapper is obsolete.)
+    # The action will have the style ID stored as its data item.
+    if self.styleManager is not None:
+      for style in self.styleManager.styles.items():
+        styleName = style[1].strName
+        styleId = style[0]
 
-    debugStyles = [ ('Style #1', 11),
-                    ('Style Two', 23),
-                    ('Style The Third', 88)
-                  ]
-
-    for styleTuple in debugStyles:
-      styleName = styleTuple[0]
-      styleId = styleTuple[1]
-
-      action = self.styleMenu.addAction(styleName)
-      action.setData(styleId)
+        action = self.styleMenu.addAction(styleName)
+        action.setData(styleId)
 
     self.ui.styleButton.setMenu(self.styleMenu)
+
+  def initialize(self, fontFamily: str, fontSize: int, styleFilePath: str, styleManager: StyleManager):
+    self.styleManager = styleManager
+    self.initStyleButton()
+    self.setGlobalFont(fontFamily, fontSize)
+    self.loadStyles(styleFilePath)
+
+  def loadStyles(self, styleFilePath: str):
+    self.styleManager.loadStyleDefs(styleFilePath)
+
+  def saveStyles(self, styleFilePath: str):
+    self.styleManager.saveStyleDefs(styleFilePath)
 
   def clear(self):
     self.ui.textEdit.clear()
@@ -280,7 +283,6 @@ class RichTextEditWidget(QtWidgets.QWidget):
     """ A 'triggered' event happens when the user changes
         the current item in the style button. """
     styleId = action.data()
-    print(f'Style button triggered.  Style: {styleId}')
 
   @QtCore.Slot()
   def onBoldButtonClicked(self):
@@ -396,9 +398,8 @@ class RichTextEditWidget(QtWidgets.QWidget):
 
   @QtCore.Slot()
   def on_styleButton_clicked(self):
-    print('Style button clicked')
     styleDlg = SelectStyleDialog(self, self.styleManager)
-    if styleDlg.exec() == QtWidgets.QDialog.Accepted:
+    if styleDlg.exec() == QtWidgets.QDialog.DialogCode.Accepted:
       styleId = styleDlg.getSelectedStyle()
 
       if styleId is not None:
