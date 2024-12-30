@@ -12,11 +12,6 @@ class SelectStyleDialog(QtWidgets.QDialog):
     self.ui = Ui_SelectStyleDlg()
     self.ui.setupUi(self)
 
-    # Load icons explicityly, as they don't load automatically (PyQt bug?)
-    self.ui.newButton.setIcon(QtGui.QIcon('Resources/plus.png'))
-    self.ui.deleteButton.setIcon(QtGui.QIcon('Resources/minus.png'))
-    self.ui.editButton.setIcon(QtGui.QIcon('Resources/pencil.png'))
-
     self.styleManager = styleManager
     self.loadStyles()
 
@@ -87,7 +82,7 @@ class SelectStyleDialog(QtWidgets.QDialog):
                                                 'Delete Style',\
                                                 f'Delete style {self.getStyleNameForRow(curRow)}')
 
-      if response == QtWidgets.QMessageBox.Yes:
+      if response == QtWidgets.QMessageBox.StandardButton.Yes:
         # Delete the style
         self.styleManager.deleteStyle(styleId)
         self.styleList.takeItem(curRow)

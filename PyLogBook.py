@@ -149,38 +149,6 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
   def getDatabasePath(self) -> str:
     return os.path.normpath(os.path.join(self.getDatabaseDirectory(), self.databaseFileName))
 
-  # This code was taken from another app, and doesn't apply to PyLogBook.  But
-  # I'm keeping this here because this might be used for setting the location
-  # of the preferences (INI) file.
-  # def getDatabaseDirectory(self):
-  #   procEnv = QtCore.QProcessEnvironment.systemEnvironment()
-
-  #   if platform.system() == 'Windows':
-  #     if procEnv.contains("APPDATA"):
-  #       # Indicates Windows platform
-  #       appDataPath = procEnv.value("APPDATA")
-
-  #       databasePath = "{}\\{}".format(appDataPath, kAppName)
-
-  #       #  Create directory if non - existent
-  #       dbDir = Path(databasePath)
-
-  #       if not dbDir.exists():
-  #         # Directory doesn't exist - create it.
-  #         if not dbDir.mkdir():
-  #           errMsg = "Could not create the data directory: {}".format(databasePath)
-  #           logging.error(f'[PyLogBookWindow.getDatabaseDirectory]: {errMsg}')
-  #           QtWidgets.QMessageBox.critical(self, kAppName, errMsg)
-  #           return ""
-
-  #       return databasePath
-  #     else:
-  #       logging.error('[PyLogBookWindow.getDatabasePath] Environment does not contain APPDATA')
-  #       return ''
-  #   else:
-  #     logging.error('[PyLogBookWindow.getDatabasePath] Only Windows supported at the moment.')
-  #     return ''
-
   def getDatabaseDirectory(self):
     return self.logDir
 

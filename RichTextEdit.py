@@ -1,4 +1,3 @@
-from tkinter import font
 from PySide6 import QtCore, QtGui, QtWidgets
 import datetime
 
@@ -18,18 +17,6 @@ class RichTextEditWidget(QtWidgets.QWidget):
     self.ui.setupUi(self)
 
     self.styleManager = StyleManager()
-
-    # Load icons explicityly, as they don't want to load automatically
-    # self.leftAlignButton.setIcon(QtGui.QIcon('Resources/Left.png'))
-    # self.centerAlignButton.setIcon(QtGui.QIcon('Resources/Center.png'))
-    # self.rightAlignButton.setIcon(QtGui.QIcon('Resources/Right.png'))
-    # self.boldButton.setIcon(QtGui.QIcon('Resources/Bold.png'))
-    # self.italicButton.setIcon(QtGui.QIcon('Resources/Italic.png'))
-    # self.underlineButton.setIcon(QtGui.QIcon('Resources/Underline.png'))
-    # self.bulletTableInsertButton.setIcon(QtGui.QIcon('Resources/Bullet Table.png'))
-    # self.numberTableInsertButton.setIcon(QtGui.QIcon('Resources/Number Table.png'))
-    # self.textColorButton.setIcon(QtGui.QIcon('Resources/Text Foreground.png'))
-    # self.textBackgroundButton.setIcon(QtGui.QIcon('Resources/Text Background.png'))
 
     self.populatePointSizesCombo()
     self.ui.textColorButton.setColor(QtGui.QColor('Black'))
