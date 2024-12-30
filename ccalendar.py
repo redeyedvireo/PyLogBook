@@ -1,9 +1,10 @@
 import typing
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PySide6 import QtCore, QtGui, QtWidgets
 import datetime
+from utility import qDateToPyDate
 
 class CCalendar(QtWidgets.QCalendarWidget):
-  dateSelectedSignal = QtCore.pyqtSignal(datetime.date)
+  dateSelectedSignal = QtCore.Signal(datetime.date)
 
   def __init__(self, parent):
     super(CCalendar, self).__init__(parent)
@@ -37,7 +38,7 @@ class CCalendar(QtWidgets.QCalendarWidget):
     if isinstance(date, datetime.date):
       theDate = date
     elif isinstance(date, QtCore.QDate):
-      theDate = date.toPyDate()
+      theDate = qDateToPyDate(date)
 
     if theDate is not None and self.hasLogEntry(theDate):
       painter.fillRect(rect, QtCore.Qt.GlobalColor.yellow)
@@ -50,8 +51,8 @@ class CCalendar(QtWidgets.QCalendarWidget):
   def hasLogEntry(self, date: datetime.date) -> bool:
     return date in self.logDates
 
-  @QtCore.pyqtSlot(QtCore.QDate)
+  @QtCore.Slot(QtCore.QDate)
   def onDateClicked(self, qtDate: QtCore.QDate):
-    date = qtDate.toPyDate()
+    date = qDateToPyDate(qtDate)
     print(f'Date clicked: {date}')
     self.dateSelectedSignal.emit(date)

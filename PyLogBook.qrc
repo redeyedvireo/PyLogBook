@@ -16,7 +16,7 @@
         <file>Resources/minus.png</file>
     </qresource>
     <qresource prefix="/files">
-        <file>logbrowserclass.css</file>
-        <file>logbrowserfunc.js</file>
+        <file>Resources/logbrowserclass.css</file>
+        <file>Resources/logbrowserfunc.js</file>
     </qresource>
 </RCC>

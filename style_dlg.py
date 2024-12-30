@@ -1,11 +1,14 @@
-from PyQt5 import uic, QtCore, QtGui, QtWidgets
+from PySide6 import QtCore, QtGui, QtWidgets
+from ui_style_dlg import Ui_CStyleDlg
 
 from styleDef import FormatFlag, FormatFlags, StyleDef
 
 class StyleDlg(QtWidgets.QDialog):
   def __init__(self, parent: QtWidgets.QWidget, styleDef: StyleDef) -> None:
     super(StyleDlg, self).__init__(parent)
-    uic.loadUi('style_dlg.ui', self)
+
+    self.ui = Ui_CStyleDlg()
+    self.ui.setupUi(self)
 
     self.styleDef = styleDef
     self.currentFont = QtGui.QFont()
@@ -15,11 +18,11 @@ class StyleDlg(QtWidgets.QDialog):
     self.updateResultLabel()
     self.updateOkButton()
 
-    self.styleNameEdit.textChanged.connect(self.updateOkButton)
-    self.bgColorToolButton.colorChangedSignal.connect(self.onColorChanged)
-    self.fgColorToolButton.colorChangedSignal.connect(self.onColorChanged)
-    self.bgColorToolButton.noColorSignal.connect(self.onColorChanged)
-    self.fgColorToolButton.noColorSignal.connect(self.onColorChanged)
+    self.ui.styleNameEdit.textChanged.connect(self.updateOkButton)
+    self.ui.bgColorToolButton.colorChangedSignal.connect(self.onColorChanged)
+    self.ui.fgColorToolButton.colorChangedSignal.connect(self.onColorChanged)
+    self.ui.bgColorToolButton.noColorSignal.connect(self.onColorChanged)
+    self.ui.fgColorToolButton.noColorSignal.connect(self.onColorChanged)
 
   def getStyle(self) -> StyleDef:
     fgColor = QtGui.QColor()
@@ -40,22 +43,22 @@ class StyleDlg(QtWidgets.QDialog):
                     FormatFlag.Underline,\
                     FormatFlag.Strikeout })
 
-    if self.fgColorToolButton.hasColor():
+    if self.ui.fgColorToolButton.hasColor():
       formatFlags.addFlag(FormatFlag.FGColor)
-      fgColor = self.fgColorToolButton.getColor()
+      fgColor = self.ui.fgColorToolButton.getColor()
     else:
       formatFlags.addFlag(FormatFlag.FGColorNone)
 
-    if self.bgColorToolButton.hasColor():
+    if self.ui.bgColorToolButton.hasColor():
       formatFlags.addFlag(FormatFlag.BGColor)
-      bgColor = self.bgColorToolButton.getColor()
+      bgColor = self.ui.bgColorToolButton.getColor()
     else:
       formatFlags.addFlag(FormatFlag.BGColorNone)
 
     theStyle = StyleDef()
 
-    theStyle.strName = self.styleNameEdit.text()
-    theStyle.strDescription = self.descriptionEdit.text()
+    theStyle.strName = self.ui.styleNameEdit.text()
+    theStyle.strDescription = self.ui.descriptionEdit.text()
     theStyle.formatFlags = formatFlags
     theStyle.strFontFamily = self.currentFont.family()
     theStyle.fontPointSize = self.currentFont.pointSize()
@@ -69,8 +72,8 @@ class StyleDlg(QtWidgets.QDialog):
     return theStyle
 
   def populateDialog(self, styleDef: StyleDef):
-    self.styleNameEdit.setText(styleDef.strName)
-    self.descriptionEdit.setText(styleDef.strDescription)
+    self.ui.styleNameEdit.setText(styleDef.strName)
+    self.ui.descriptionEdit.setText(styleDef.strDescription)
 
     if styleDef.formatFlags != FormatFlag.NoFormat:
       if styleDef.formatFlags.hasFlag(FormatFlag.FontFamily):
@@ -92,20 +95,20 @@ class StyleDlg(QtWidgets.QDialog):
         self.currentFont.setStrikeOut(styleDef.bIsStrikeout)
 
       if styleDef.formatFlags.hasFlag(FormatFlag.FGColorNone):
-        self.fgColorToolButton.setNoColor()
+        self.ui.fgColorToolButton.setNoColor()
 
       if styleDef.formatFlags.hasFlag(FormatFlag.FGColor):
-        self.fgColorToolButton.setColor(styleDef.textColor)
+        self.ui.fgColorToolButton.setColor(styleDef.textColor)
 
       if styleDef.formatFlags.hasFlag(FormatFlag.BGColorNone):
-        self.bgColorToolButton.setNoColor()
+        self.ui.bgColorToolButton.setNoColor()
 
       if styleDef.formatFlags.hasFlag(FormatFlag.BGColor):
-        self.bgColorToolButton.setColor(styleDef.backgroundColor)
+        self.ui.bgColorToolButton.setColor(styleDef.backgroundColor)
 
-  @QtCore.pyqtSlot()
+  @QtCore.Slot()
   def on_fontButton_clicked(self):
-    font, okClicked = QtWidgets.QFontDialog.getFont(self.currentFont, self, 'Select Font')
+    okClicked, font = QtWidgets.QFontDialog.getFont(self.currentFont, self, 'Select Font')
 
     if okClicked:
       self.currentFont = font
@@ -136,7 +139,7 @@ class StyleDlg(QtWidgets.QDialog):
 
     styleDescription = ', '.join(styleItemList)
 
-    self.fontLabel.setText(styleDescription)
+    self.ui.fontLabel.setText(styleDescription)
 
   def updateResultLabel(self):
     styleElementList: list[str] = []
@@ -154,11 +157,11 @@ class StyleDlg(QtWidgets.QDialog):
     if self.currentFont.strikeOut():
       fontStr += ' strikeout'
 
-    if self.bgColorToolButton.hasColor():
-      styleElementList.append(f'background-color: {self.bgColorToolButton.getColor().name()}')
+    if self.ui.bgColorToolButton.hasColor():
+      styleElementList.append(f'background-color: {self.ui.bgColorToolButton.getColor().name()}')
 
-    if self.fgColorToolButton.hasColor():
-      styleElementList.append(f'color: {self.fgColorToolButton.getColor().name()}')
+    if self.ui.fgColorToolButton.hasColor():
+      styleElementList.append(f'color: {self.ui.fgColorToolButton.getColor().name()}')
 
     styleElementList.append(f'font {fontStr} "{self.currentFont.family()}"')
     styleElementList.append(f'font-size: {self.currentFont.pointSize()}px')
@@ -166,11 +169,11 @@ class StyleDlg(QtWidgets.QDialog):
     styleSheetStr = '; '.join(styleElementList)
     styleSheetStr += ';'
 
-    self.sampleLabel.setStyleSheet(styleSheetStr)
-    self.sampleLabel.setText('Style looks like this')
+    self.ui.sampleLabel.setStyleSheet(styleSheetStr)
+    self.ui.sampleLabel.setText('Style looks like this')
 
   def onColorChanged(self):
     self.updateResultLabel()
 
   def updateOkButton(self):
-    self.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).setEnabled(len(self.styleNameEdit.text()) > 0)
+    self.ui.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).setEnabled(len(self.ui.styleNameEdit.text()) > 0)

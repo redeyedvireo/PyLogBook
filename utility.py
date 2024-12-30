@@ -1,6 +1,6 @@
 from typing import Any
 import logging
-from PyQt5 import QtCore
+from PySide6 import QtCore
 import os.path
 import time
 import datetime
@@ -9,7 +9,7 @@ from datetime import timezone
 def julianDayToDate(julianDay: int) -> datetime.date:
   """ Returns a Python date corresponding to the given Julian day. """
   qtDate = QtCore.QDate.fromJulianDay(julianDay)
-  date = qtDate.toPyDate()
+  date = qDateToPyDate(qtDate)
   return date
 
 def dateToJulianDay(inDate: datetime.date) -> int:
@@ -28,6 +28,9 @@ def formatDate(inDate: datetime.date) -> str:
 def dateFromFormattedString(dateStr: str) -> datetime.date:
   thisDateTime = datetime.datetime.strptime(dateStr, "%a %b %d %Y")
   return thisDateTime.date()
+
+def qDateToPyDate(qDate: QtCore.QDate) -> datetime.date:
+  return datetime.date(qDate.year(), qDate.month(), qDate.day())
 
 def bytesToQByteArray(data: bytes) -> QtCore.QByteArray:
   return QtCore.QByteArray(data)

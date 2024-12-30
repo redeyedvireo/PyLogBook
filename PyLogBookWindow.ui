@@ -44,7 +44,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="tabPosition">
-       <enum>QTabWidget::South</enum>
+       <enum>QTabWidget::TabPosition::South</enum>
       </property>
       <property name="currentIndex">
        <number>0</number>
@@ -77,7 +77,6 @@
              <widget class="QLabel" name="logDateLabel_2">
               <property name="font">
                <font>
-                <weight>75</weight>
                 <bold>true</bold>
                </font>
               </property>
@@ -90,7 +89,6 @@
              <widget class="QLabel" name="logDateLabel">
               <property name="font">
                <font>
-                <weight>75</weight>
                 <bold>true</bold>
                </font>
               </property>
@@ -165,7 +163,7 @@
             <item>
              <spacer name="horizontalSpacer">
               <property name="orientation">
-               <enum>Qt::Horizontal</enum>
+               <enum>Qt::Orientation::Horizontal</enum>
               </property>
               <property name="sizeHint" stdset="0">
                <size>
@@ -185,7 +183,7 @@
             <item>
              <spacer name="horizontalSpacer_2">
               <property name="orientation">
-               <enum>Qt::Horizontal</enum>
+               <enum>Qt::Orientation::Horizontal</enum>
               </property>
               <property name="sizeHint" stdset="0">
                <size>
@@ -248,7 +246,7 @@
      <x>0</x>
      <y>0</y>
      <width>824</width>
-     <height>21</height>
+     <height>33</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -343,7 +341,7 @@
   <customwidget>
    <class>LogBrowser</class>
    <extends>QWidget</extends>
-   <header>logbrowser</header>
+   <header>log_browser</header>
    <container>1</container>
   </customwidget>
   <customwidget>

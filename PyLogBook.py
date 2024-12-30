@@ -6,7 +6,9 @@ import datetime
 from pathlib import Path
 import logging
 from logging.handlers import RotatingFileHandler
-from PyQt5 import QtCore, QtGui, QtWidgets, uic
+from PySide6 import QtCore, QtGui, QtWidgets
+
+from ui_PyLogBookWindow import Ui_PyLogBookWindow
 
 from SetPasswordDialog import SetPasswordDialog
 from database import Database
@@ -31,7 +33,9 @@ scriptDir = os.path.dirname(scriptPath)
 class PyLogBookWindow(QtWidgets.QMainWindow):
   def __init__(self):
     super(PyLogBookWindow, self).__init__()
-    uic.loadUi('PyLogBookWindow.ui', self)
+
+    self.ui = Ui_PyLogBookWindow()
+    self.ui.setupUi(self)
 
     prefsFilePath = self.getPrefsPath()
     print(f'Prefs file: {prefsFilePath}')
@@ -45,12 +49,12 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
     self.currentEntryId = dateToJulianDay(self.currentDate)
     self.tempNewLog = ''
 
-    self.logBrowser.setDb(self.db)
+    self.ui.logBrowser.setDb(self.db)
 
-    self.submitButton.clicked.connect(self.onSubmitButtonClicked)
-    self.curMonth.dateSelectedSignal.connect(self.onDisplayLogEntryScrollBrowser)
-    self.logEdit.logTextChangedSignal.connect(self.onLogTextChanged)
-    self.logEntryTree.logEntryClickedSignal.connect(self.onDisplayLogEntryScrollBrowser)
+    self.ui.submitButton.clicked.connect(self.onSubmitButtonClicked)
+    self.ui.curMonth.dateSelectedSignal.connect(self.onDisplayLogEntryScrollBrowser)
+    self.ui.logEdit.logTextChangedSignal.connect(self.onLogTextChanged)
+    self.ui.logEntryTree.logEntryClickedSignal.connect(self.onDisplayLogEntryScrollBrowser)
 
     QtCore.QTimer.singleShot(0, self.initialize)
 
@@ -59,7 +63,7 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
 
     # Disallow deleting log entries.  In the future, might want to have a
     # preference that allows entries to be deleted.
-    self.deleteButton.hide()
+    self.ui.deleteButton.hide()
 
     self.prefs.readPrefsFile()
 
@@ -72,7 +76,7 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
     if size is not None:
       self.resize(size)
 
-    self.logBrowser.setNumEntriesPerPage(self.prefs.getNumEntriesPerPage())
+    self.ui.logBrowser.setNumEntriesPerPage(self.prefs.getNumEntriesPerPage())
 
     if self.prefs.openPreviousLogOnStartup():
       logFileTuple = self.prefs.getPreviousLogFilePath()
@@ -118,9 +122,9 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
               self.db.closeDatabase()
               return False
 
-        self.initControls()
-        self.setInitialEntryToDisplay()
+        # These 3 calls are done in on_actionOpen_triggered
         self.setInitialBrowserEntries()
+
         self.setAppTitle()
         self.prefs.setLogFilePath(self.getDatabasePath())
         return True
@@ -201,23 +205,23 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
       self.setWindowTitle('PyLogBook')
 
   def clearAllControls(self):
-    self.logEntryTree.clear()
-    self.curMonth.clear()
-    self.logBrowser.clear()
-    self.logEdit.clear()
-    self.tagsEdit.clear()
+    self.ui.logEntryTree.clear()
+    self.ui.curMonth.clear()
+    self.ui.logBrowser.clear()
+    self.ui.logEdit.clear()
+    self.ui.tagsEdit.clear()
 
   def enableLogEntry(self, enable):
-    self.submitButton.setEnabled(enable)
-    self.addendumButton.setEnabled(enable)
-    self.logEdit.setEnabled(enable)
-    self.tagsEdit.setEnabled(enable)
-    self.deleteButton.setEnabled(enable)
+    self.ui.submitButton.setEnabled(enable)
+    self.ui.addendumButton.setEnabled(enable)
+    self.ui.logEdit.setEnabled(enable)
+    self.ui.tagsEdit.setEnabled(enable)
+    self.ui.deleteButton.setEnabled(enable)
 
   def initControls(self):
     dateList = self.db.getEntryDates()
-    self.curMonth.setLogDates(dateList)
-    self.logEntryTree.setLogDates(dateList)
+    self.ui.curMonth.setLogDates(dateList)
+    self.ui.logEntryTree.setLogDates(dateList)
 
   def displayLog(self, entryId: int):
     if entryId != kTempItemId:
@@ -225,16 +229,16 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
         logEntry = self.db.getLogEntry(entryId)
 
         if logEntry is not None:
-          self.logEdit.setDocumentText(logEntry.content)
-          self.tagsEdit.setText(logEntry.tagsAsString())
-          self.logDateLabel.setText(logEntry.entryDateAsString())
-          self.lastModificationDateLabel.setText(logEntry.lastModifiedDateAsFormattedString())
-          self.numChangesLabel.setText(logEntry.numModificationsAsString())
+          self.ui.logEdit.setDocumentText(logEntry.content)
+          self.ui.tagsEdit.setText(logEntry.tagsAsString())
+          self.ui.logDateLabel.setText(logEntry.entryDateAsString())
+          self.ui.lastModificationDateLabel.setText(logEntry.lastModifiedDateAsFormattedString())
+          self.ui.numChangesLabel.setText(logEntry.numModificationsAsString())
 
           self.currentEntryId = entryId
 
-          self.deleteButton.setEnabled(True)
-          self.submitButton.setEnabled(False)
+          self.ui.deleteButton.setEnabled(True)
+          self.ui.submitButton.setEnabled(False)
         else:
           logging.error(f'[PyLogBookWindow.displayLog] Entry {entryId} not found in database')
           QtWidgets.QMessageBox.critical(self, kAppName, "Entry was not found in the database")
@@ -250,21 +254,21 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
           fontSize = 10
 
         fontFamily = self.prefs.getEditorDefaultFontFamily()
-        self.logEdit.newDocument(fontFamily, fontSize)
+        self.ui.logEdit.newDocument(fontFamily, fontSize)
 
-        self.tagsEdit.setText('')
-        self.logDateLabel.setText(formatDate(entryDate))
-        self.lastModificationDateLabel.setText(formatDateTime(datetime.datetime.now(datetime.timezone.utc)))
-        self.numChangesLabel.setText('0')
+        self.ui.tagsEdit.setText('')
+        self.ui.logDateLabel.setText(formatDate(entryDate))
+        self.ui.lastModificationDateLabel.setText(formatDateTime(datetime.datetime.now(datetime.timezone.utc)))
+        self.ui.numChangesLabel.setText('0')
 
         self.currentEntryId = entryId
 
-        self.deleteButton.setEnabled(False)
-        self.submitButton.setEnabled(True)
+        self.ui.deleteButton.setEnabled(False)
+        self.ui.submitButton.setEnabled(True)
 
   def removeTemporaryDay(self):
     if self.currentEntryId == kTempItemId:
-      self.logEntryTree.removeTemporaryDay(self.currentEntryId)
+      self.ui.logEntryTree.removeTemporaryDay(self.currentEntryId)
 
   def setInitialEntryToDisplay(self):
     # Display today's date to start with.  If there is no entry for
@@ -289,12 +293,12 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
 
   def setInitialBrowserEntries(self):
     dateList = self.db.getEntryDates()
-    self.logBrowser.setDateList(dateList)
-    self.logBrowser.displayCurrentBrowserPage()
+    self.ui.logBrowser.setDateList(dateList)
+    self.ui.logBrowser.displayCurrentBrowserPage()
 
   def createNewLogEntry(self, date: datetime.date):
-    self.logEdit.clear()
-    self.tagsEdit.clear()
+    self.ui.logEdit.clear()
+    self.ui.tagsEdit.clear()
 
     # Create the log entry
     self.tempNewLog = ''
@@ -308,13 +312,13 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
       fontSize = 10
 
     fontFamily = self.prefs.getEditorDefaultFontFamily()
-    self.logEdit.newDocument(fontFamily, fontSize)
+    self.ui.logEdit.newDocument(fontFamily, fontSize)
 
-    self.logDateLabel.setText(formatDate(date))
-    self.lastModificationDateLabel.setText(formatDateTime(datetime.datetime.now(datetime.timezone.utc)))
-    self.numChangesLabel.setText("0")
+    self.ui.logDateLabel.setText(formatDate(date))
+    self.ui.lastModificationDateLabel.setText(formatDateTime(datetime.datetime.now(datetime.timezone.utc)))
+    self.ui.numChangesLabel.setText("0")
 
-    self.logEntryTree.addTemporaryDay(self.currentDate)
+    self.ui.logEntryTree.addTemporaryDay(self.currentDate)
 
   def saveLogEntry(self) -> tuple[bool, bool, int]:
     """ Saves the log entry as self.currentEntryId.
@@ -322,7 +326,7 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
         (success, newLog?, logId)
     """
     if self.db.entryExists(self.currentEntryId):
-      success = self.db.updateLog(self.currentEntryId, self.logEdit.toHtml(), self.tagsEdit.text())
+      success = self.db.updateLog(self.currentEntryId, self.ui.logEdit.toHtml(), self.ui.tagsEdit.text())
       if success:
         return (True, False, self.currentEntryId)
       else:
@@ -331,7 +335,7 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
         return (False, False, kTempItemId)
     else:
       # New entry - create it
-      logEntry = LogEntry.fromData(0, self.logEdit.toHtml(), self.tagsEdit.text(), datetime.datetime.now(datetime.timezone.utc))
+      logEntry = LogEntry.fromData(0, self.ui.logEdit.toHtml(), self.ui.tagsEdit.text(), datetime.datetime.now(datetime.timezone.utc))
       entryId = self.db.addNewLog(self.currentDate, logEntry)
 
       if entryId is None:
@@ -342,25 +346,25 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
   def addNewLogEntryToWidgets(self, entryId):
     """ Adds a new log entry to the calendar, log entry tree, and log browser. """
     # Add entry to the calendar widget
-    self.curMonth.addLogDate(self.currentDate)
+    self.ui.curMonth.addLogDate(self.currentDate)
 
     # Add entry to the log browser
-    self.logBrowser.addDate(self.currentDate)
+    self.ui.logBrowser.addDate(self.currentDate)
 
     # Add entry to the log entry tree
-    self.logEntryTree.addLogDate(self.currentDate)
+    self.ui.logEntryTree.addLogDate(self.currentDate)
 
   def setDateCurrent(self, inDate: datetime.date, scrollLogBrowser: bool):
     self.removeTemporaryDay()
 
     # Scroll to this date in the log tree
-    self.logEntryTree.setCurrentDate(inDate)
+    self.ui.logEntryTree.setCurrentDate(inDate)
 
     # Scroll to this date in the log browser, if requested
     if scrollLogBrowser:
-      self.logBrowser.scrollToItem(inDate)
+      self.ui.logBrowser.scrollToItem(inDate)
 
-    self.curMonth.setCurrentDate(inDate)
+    self.ui.curMonth.setCurrentDate(inDate)
 
     entryId = dateToJulianDay(inDate)
 
@@ -370,11 +374,11 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
 
       self.displayLog(entryId)
 
-  @QtCore.pyqtSlot()
+  @QtCore.Slot()
   def on_addendumButton_clicked(self):
-    self.logEdit.addAddendum()
+    self.ui.logEdit.addAddendum()
 
-  @QtCore.pyqtSlot()
+  @QtCore.Slot()
   def on_actionNew_Log_File_triggered(self):
     filepathTuple = QtWidgets.QFileDialog.getSaveFileName(self,
                                                           "LogBook - New Log File",
@@ -404,7 +408,7 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
 
       self.setAppTitle()
 
-  @QtCore.pyqtSlot()
+  @QtCore.Slot()
   def on_actionOpen_triggered(self):
     filepathTuple = QtWidgets.QFileDialog.getOpenFileName(self,
                                                           "LogBook - Open Log File",
@@ -427,11 +431,11 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
         self.initControls()
         self.setInitialEntryToDisplay()
 
-  @QtCore.pyqtSlot()
+  @QtCore.Slot()
   def on_actionClose_triggered(self):
     self.closeLogFile()
 
-  @QtCore.pyqtSlot()
+  @QtCore.Slot()
   def on_actionImport_XML_triggered(self):
     filepathTuple = QtWidgets.QFileDialog.getOpenFileName(self,
                                                           "LogBook - Import Log File XML",
@@ -443,16 +447,16 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
       success, entryIds, earliestDate, latestDate = xmlHandler.importLogFile(filepathTuple[0])
       if success:
         entryDates = [ julianDayToDate(d) for d in entryIds ]
-        self.logEntryTree.addLogDates(entryDates)
-        self.curMonth.addLogDates(entryDates)
-        self.logBrowser.addDates(entryDates)
+        self.ui.logEntryTree.addLogDates(entryDates)
+        self.ui.curMonth.addLogDates(entryDates)
+        self.ui.logBrowser.addDates(entryDates)
 
         msg = f'{len(entryDates)} log imported.\nDate range {formatDate(earliestDate)} to {formatDate(latestDate)}'
         QtWidgets.QMessageBox.information(self, 'Logs imported', msg)
       else:
         print('Error importing file')
 
-  @QtCore.pyqtSlot()
+  @QtCore.Slot()
   def on_actionExport_XML_triggered(self):
     filepathTuple = QtWidgets.QFileDialog.getSaveFileName(self,
                                                           "LogBook - Export Log File XML",
@@ -469,30 +473,30 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
       else:
         QtWidgets.QMessageBox.information(self, 'Log Export', 'An error occurred exporting to XML.')
 
-  @QtCore.pyqtSlot()
+  @QtCore.Slot()
   def on_actionExit_triggered(self):
     self.close()
 
-  @QtCore.pyqtSlot()
+  @QtCore.Slot()
   def on_actionPreferences_triggered(self):
     prefsDialog = PrefsDialog(self, self.prefs)
     if prefsDialog.exec() == QtWidgets.QDialog.Accepted:
       self.prefs.writePrefsFile()
-      self.logBrowser.setNumEntriesPerPage(self.prefs.getNumEntriesPerPage())
+      self.ui.logBrowser.setNumEntriesPerPage(self.prefs.getNumEntriesPerPage())
 
-  @QtCore.pyqtSlot()
+  @QtCore.Slot()
   def on_actionAbout_Qt_triggered(self):
     QtWidgets.QMessageBox.aboutQt(self, 'About Qt')
 
-  @QtCore.pyqtSlot()
+  @QtCore.Slot()
   def on_actionAbout_PyLogBook_triggered(self):
     QtWidgets.QMessageBox.about(self, "About PyLogBook", "PyLogBook by Jeff Geraci")
 
-  @QtCore.pyqtSlot()
+  @QtCore.Slot()
   def onLogTextChanged(self):
-    self.submitButton.setEnabled(True)
+    self.ui.submitButton.setEnabled(True)
 
-  @QtCore.pyqtSlot()
+  @QtCore.Slot()
   def onSubmitButtonClicked(self):
     success, newLog, entryId = self.saveLogEntry()
 
@@ -511,11 +515,11 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
 
     else:
       # Existing log
-      self.logBrowser.displayCurrentBrowserPage()
+      self.ui.logBrowser.displayCurrentBrowserPage()
 
     # Update the UI
-    self.logEdit.setDocumentModified(False)
-    self.submitButton.setEnabled(False)
+    self.ui.logEdit.setDocumentModified(False)
+    self.ui.submitButton.setEnabled(False)
 
 
   def onDisplayLogEntryScrollBrowser(self, date: datetime.date) -> None:
@@ -527,11 +531,11 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
         saves it if he answers Yes.  Returns an error code.  False indicates there was an error saving,
         True indicates no error.
     """
-    if self.logEdit.isModified():
+    if self.ui.logEdit.isModified():
       message = 'The current log entry has not been saved.  Would you like to save it?'
       button = QtWidgets.QMessageBox.question(self, kAppName, message)
 
-      if button == QtWidgets.QMessageBox.Yes:
+      if button == QtWidgets.QMessageBox.StandardButton.Yes:
         success, newLog, savedEntryId = self.saveLogEntry()
 
         if not success:
@@ -582,7 +586,7 @@ def main():
     logging.error(f'Exception object: {inst}')
     sys.exit(1)
 
-  returnVal = app.exec_()
+  returnVal = app.exec()
   shutdownApp()
 
   sys.exit(returnVal)

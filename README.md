@@ -13,7 +13,7 @@ Then, activate it:
 `.\venv\Scripts\activate`
 
 ### PyQt
-`pip install PyQt6`
+`pip install Pyside6`
 
 ### cryptography
 `pip install cryptography`

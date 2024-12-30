@@ -1,18 +1,18 @@
-from PyQt5 import uic, QtCore, QtGui, QtWidgets
+from PySide6 import QtCore, QtGui, QtWidgets
 
 class CColorButton(QtWidgets.QToolButton):
   # Emitted when the user changes to "No Color"
-  noColorSignal = QtCore.pyqtSignal()
+  noColorSignal = QtCore.Signal()
 
   # Emitted when the color has changed
-  colorChangedSignal = QtCore.pyqtSignal(QtGui.QColor)
+  colorChangedSignal = QtCore.Signal(QtGui.QColor)
 
   def __init__(self, parent):
     super(CColorButton, self).__init__(parent)
     self.m_hasColor = False
     self.m_color = QtGui.QColor(128, 128, 128)
 
-    self.m_noColorAction = QtWidgets.QAction()
+    self.m_noColorAction = QtGui.QAction()
     self.m_noColorAction.setText('No Color')
 
     self.m_menu = QtWidgets.QMenu()
@@ -21,7 +21,7 @@ class CColorButton(QtWidgets.QToolButton):
 
     self.setMenu(self.m_menu)
 
-    self.setPopupMode(QtWidgets.QToolButton.MenuButtonPopup)
+    self.setPopupMode(QtWidgets.QToolButton.ToolButtonPopupMode.MenuButtonPopup)
 
     self.clicked.connect(self.showColorDialog)
     self.m_noColorAction.triggered.connect(self.onNoColorActionTriggered)

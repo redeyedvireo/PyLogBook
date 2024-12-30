@@ -1,4 +1,4 @@
-from PyQt5 import uic, QtCore, QtGui, QtWidgets
+from PySide6 import QtCore, QtGui, QtWidgets
 from enum import IntFlag
 
 class FormatFlag(IntFlag):

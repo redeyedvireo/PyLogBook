@@ -1,4 +1,5 @@
-from PyQt5 import uic, QtCore, QtGui, QtWidgets
+from PySide6 import QtCore, QtGui, QtWidgets
+from ui_prefs_dialog import Ui_PrefsDialog
 
 from preferences import Preferences
 
@@ -8,36 +9,38 @@ from constants import kStartupLoadPreviousLog, \
 class PrefsDialog(QtWidgets.QDialog):
   def __init__(self, parent, prefs: Preferences):
     super(PrefsDialog, self).__init__(parent)
-    uic.loadUi('prefs_dialog.ui', self)
+
+    self.ui = Ui_PrefsDialog()
+    self.ui.setupUi(self)
 
     self.accepted.connect(self.onAccept)
 
     self.prefs = prefs
-    self.listWidget.setCurrentRow(0)
+    self.ui.listWidget.setCurrentRow(0)
 
     # Populate widgets with pref data
 
     if self.prefs.getStartupAction() == kStartupEmptyWorkspace:
-      self.emptyWorkspaceRadio.setChecked(True)
+      self.ui.emptyWorkspaceRadio.setChecked(True)
     else:
-      self.loadPreviousLogRadio.setChecked(True)
+      self.ui.loadPreviousLogRadio.setChecked(True)
 
-    self.defaultTextSizeSpin.setValue(self.prefs.getEditorDefaultFontSize())
+    self.ui.defaultTextSizeSpin.setValue(self.prefs.getEditorDefaultFontSize())
 
     tempFont = QtGui.QFont()
     tempFont.setFamily(self.prefs.getEditorDefaultFontFamily())
 
-    self.logsPerPageSpin.setValue(self.prefs.getNumEntriesPerPage())
+    self.ui.logsPerPageSpin.setValue(self.prefs.getNumEntriesPerPage())
 
   def onAccept(self):
-    if self.emptyWorkspaceRadio.isChecked():
+    if self.ui.emptyWorkspaceRadio.isChecked():
       self.prefs.setStartupAction(kStartupEmptyWorkspace)
     else:
       self.prefs.setStartupAction(kStartupLoadPreviousLog)
 
-    self.prefs.setEditorDefaultFontSize(self.defaultTextSizeSpin.value())
+    self.prefs.setEditorDefaultFontSize(self.ui.defaultTextSizeSpin.value())
 
-    currentFont = self.defaultFontCombo.currentFont()
+    currentFont = self.ui.defaultFontCombo.currentFont()
     self.prefs.setEditorDefaultFontFamily(currentFont.family())
 
-    self.prefs.setNumEntriesPerPage(self.logsPerPageSpin.value())
+    self.prefs.setNumEntriesPerPage(self.ui.logsPerPageSpin.value())

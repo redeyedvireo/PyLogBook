@@ -1,4 +1,4 @@
-from PyQt5 import uic, QtCore, QtGui, QtWidgets
+from PySide6 import QtCore, QtGui, QtWidgets
 import typing
 import logging
 import datetime
@@ -9,7 +9,7 @@ from month_widget_item import CMonthWidgetItem
 from utility import dateToJulianDay, formatDate, julianDayToDate
 
 class CLogEntryTree(QtWidgets.QTreeWidget):
-  logEntryClickedSignal = QtCore.pyqtSignal(datetime.date)
+  logEntryClickedSignal = QtCore.Signal(datetime.date)
 
   def __init__(self, parent):
     super(CLogEntryTree, self).__init__(parent)
@@ -124,7 +124,7 @@ class CLogEntryTree(QtWidgets.QTreeWidget):
 
   def findChildItem(self, parent: QtWidgets.QTreeWidgetItem, itemName: str) -> QtWidgets.QTreeWidgetItem | None:
 
-    itemList = self.findItems(itemName, typing.cast(QtCore.Qt.MatchFlags, QtCore.Qt.MatchFlag.MatchFixedString | QtCore.Qt.MatchFlag.MatchRecursive), 0)
+    itemList = self.findItems(itemName, QtCore.Qt.MatchFlag.MatchFixedString | QtCore.Qt.MatchFlag.MatchRecursive, 0)
 
     if len(itemList) > 0:
       for item in itemList:
@@ -136,7 +136,7 @@ class CLogEntryTree(QtWidgets.QTreeWidget):
   def findEntryByDate(self, date: datetime.date) -> QtWidgets.QTreeWidgetItem | None:
     itemString = formatDate(date)
 
-    itemList = self.findItems(itemString, typing.cast(QtCore.Qt.MatchFlags, QtCore.Qt.MatchFlag.MatchFixedString | QtCore.Qt.MatchFlag.MatchRecursive), 0)
+    itemList = self.findItems(itemString, QtCore.Qt.MatchFlag.MatchFixedString | QtCore.Qt.MatchFlag.MatchRecursive, 0)
 
     if len(itemList) > 0:
       return itemList[0]

@@ -1,4 +1,5 @@
-from PyQt5 import uic, QtCore, QtGui, QtWidgets
+from PySide6 import QtCore, QtGui, QtWidgets
+from ui_select_style_dlg import Ui_SelectStyleDlg
 from styleDef import StyleDef
 from style_dlg import StyleDlg
 
@@ -7,17 +8,19 @@ from style_manager import StyleManager, kUserStyleStartIndex
 class SelectStyleDialog(QtWidgets.QDialog):
   def __init__(self, parent, styleManager: StyleManager):
     super(SelectStyleDialog, self).__init__(parent)
-    uic.loadUi('select_style_dlg.ui', self)
+
+    self.ui = Ui_SelectStyleDlg()
+    self.ui.setupUi(self)
 
     # Load icons explicityly, as they don't load automatically (PyQt bug?)
-    self.newButton.setIcon(QtGui.QIcon('Resources/plus.png'))
-    self.deleteButton.setIcon(QtGui.QIcon('Resources/minus.png'))
-    self.editButton.setIcon(QtGui.QIcon('Resources/pencil.png'))
+    self.ui.newButton.setIcon(QtGui.QIcon('Resources/plus.png'))
+    self.ui.deleteButton.setIcon(QtGui.QIcon('Resources/minus.png'))
+    self.ui.editButton.setIcon(QtGui.QIcon('Resources/pencil.png'))
 
     self.styleManager = styleManager
     self.loadStyles()
 
-    self.styleList.setCurrentRow(0)
+    self.ui.styleList.setCurrentRow(0)
 
   def loadStyles(self):
     styleIds = self.styleManager.getStyleIds()
@@ -30,16 +33,16 @@ class SelectStyleDialog(QtWidgets.QDialog):
   def addStyle(self, styleName: str, styleId: int) -> None:
     item = QtWidgets.QListWidgetItem(styleName)
     item.setData(QtCore.Qt.ItemDataRole.UserRole, styleId)
-    self.styleList.addItem(item)
+    self.ui.styleList.addItem(item)
 
   def getStyleIdForRow(self, row: int) -> int:
-    item = self.styleList.item(row)
+    item = self.ui.styleList.item(row)
     itemVar = item.data(QtCore.Qt.ItemDataRole.UserRole)
 
     return int(itemVar)
 
   def getSelectedStyle(self) -> int | None:
-    curRow = self.styleList.currentRow()
+    curRow = self.ui.styleList.currentRow()
     if curRow > -1:
       return self.getStyleIdForRow(curRow)
     else:
@@ -48,18 +51,18 @@ class SelectStyleDialog(QtWidgets.QDialog):
 
   # ************* SLOTS *************
 
-  @QtCore.pyqtSlot(int)
+  @QtCore.Slot(int)
   def on_styleList_currentRowChanged(self, currentRow) -> None:
     styleDef = self.styleManager.getStyle(self.getStyleIdForRow(currentRow))
 
     if styleDef is not None:
-      self.descriptionEdit.setText(styleDef.strDescription)
+      self.ui.descriptionEdit.setText(styleDef.strDescription)
 
       # Disable Edit and Delete buttons for the first two (built-in) styles
-      self.editButton.setEnabled(currentRow >= kUserStyleStartIndex)
-      self.deleteButton.setEnabled(currentRow >= kUserStyleStartIndex)
+      self.ui.editButton.setEnabled(currentRow >= kUserStyleStartIndex)
+      self.ui.deleteButton.setEnabled(currentRow >= kUserStyleStartIndex)
 
-  @QtCore.pyqtSlot()
+  @QtCore.Slot()
   def on_newButton_clicked(self) -> None:
     styleDef = StyleDef()
     styleDef.setAllFormatFlags()
@@ -73,9 +76,9 @@ class SelectStyleDialog(QtWidgets.QDialog):
 
       self.addStyle(styleDef.strName, styleId)
 
-  @QtCore.pyqtSlot()
+  @QtCore.Slot()
   def on_deleteButton_clicked(self) -> None:
-    curRow = self.styleList.currentRow()
+    curRow = self.ui.styleList.currentRow()
 
     if curRow != -1:
       styleId = self.getStyleIdForRow(curRow)
@@ -89,9 +92,9 @@ class SelectStyleDialog(QtWidgets.QDialog):
         self.styleManager.deleteStyle(styleId)
         self.styleList.takeItem(curRow)
 
-  @QtCore.pyqtSlot()
+  @QtCore.Slot()
   def on_editButton_clicked(self) -> None:
-    curRow = self.styleList.currentRow()
+    curRow = self.ui.styleList.currentRow()
 
     if curRow != -1:
       styleId = self.getStyleIdForRow(curRow)

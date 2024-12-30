@@ -1,4 +1,4 @@
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PySide6 import QtCore, QtGui, QtWidgets
 import datetime
 
 class CMonthWidgetItem(QtWidgets.QTreeWidgetItem):

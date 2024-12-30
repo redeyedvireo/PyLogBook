@@ -52,6 +52,12 @@
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
+       <property name="minimumSize">
+        <size>
+         <width>50</width>
+         <height>0</height>
+        </size>
+       </property>
        <property name="maximumSize">
         <size>
          <width>40</width>
@@ -72,7 +78,7 @@
         <string>Left</string>
        </property>
        <property name="icon">
-        <iconset resource="PyLogBook.qrc">
+        <iconset>
          <normaloff>:/PyLogBook/Resources/Left.png</normaloff>:/PyLogBook/Resources/Left.png</iconset>
        </property>
        <property name="iconSize">
@@ -98,7 +104,7 @@
         <string>Center</string>
        </property>
        <property name="icon">
-        <iconset resource="PyLogBook.qrc">
+        <iconset>
          <normaloff>:/PyLogBook/Resources/Center.png</normaloff>:/PyLogBook/Resources/Center.png</iconset>
        </property>
        <property name="iconSize">
@@ -124,7 +130,7 @@
         <string>Right</string>
        </property>
        <property name="icon">
-        <iconset resource="PyLogBook.qrc">
+        <iconset>
          <normaloff>:/PyLogBook/Resources/Right.png</normaloff>:/PyLogBook/Resources/Right.png</iconset>
        </property>
        <property name="iconSize">
@@ -145,7 +151,6 @@
       <widget class="QToolButton" name="boldButton">
        <property name="font">
         <font>
-         <weight>75</weight>
          <bold>true</bold>
         </font>
        </property>
@@ -156,7 +161,7 @@
         <string>B</string>
        </property>
        <property name="icon">
-        <iconset resource="PyLogBook.qrc">
+        <iconset>
          <normaloff>:/PyLogBook/Resources/Bold.png</normaloff>:/PyLogBook/Resources/Bold.png</iconset>
        </property>
        <property name="iconSize">
@@ -184,7 +189,7 @@
         <string>I</string>
        </property>
        <property name="icon">
-        <iconset resource="PyLogBook.qrc">
+        <iconset>
          <normaloff>:/PyLogBook/Resources/Italic.png</normaloff>:/PyLogBook/Resources/Italic.png</iconset>
        </property>
        <property name="checkable">
@@ -206,7 +211,7 @@
         <string>u</string>
        </property>
        <property name="icon">
-        <iconset resource="PyLogBook.qrc">
+        <iconset>
          <normaloff>:/PyLogBook/Resources/Underline.png</normaloff>:/PyLogBook/Resources/Underline.png</iconset>
        </property>
        <property name="checkable">
@@ -223,7 +228,7 @@
         <string>Table</string>
        </property>
        <property name="icon">
-        <iconset resource="PyLogBook.qrc">
+        <iconset>
          <normaloff>:/PyLogBook/Resources/Bullet Table.png</normaloff>:/PyLogBook/Resources/Bullet Table.png</iconset>
        </property>
       </widget>
@@ -237,7 +242,7 @@
         <string>.</string>
        </property>
        <property name="icon">
-        <iconset resource="PyLogBook.qrc">
+        <iconset>
          <normaloff>:/PyLogBook/Resources/Number Table.png</normaloff>:/PyLogBook/Resources/Number Table.png</iconset>
        </property>
       </widget>
@@ -255,17 +260,17 @@
         <string>Apply Style...</string>
        </property>
        <property name="popupMode">
-        <enum>QToolButton::MenuButtonPopup</enum>
+        <enum>QToolButton::ToolButtonPopupMode::MenuButtonPopup</enum>
        </property>
       </widget>
      </item>
      <item>
       <spacer name="horizontalSpacer_2">
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
        <property name="sizeType">
-        <enum>QSizePolicy::Fixed</enum>
+        <enum>QSizePolicy::Policy::Fixed</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -284,7 +289,7 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset resource="PyLogBook.qrc">
+        <iconset>
          <normaloff>:/PyLogBook/Resources/Text Foreground.png</normaloff>:/PyLogBook/Resources/Text Foreground.png</iconset>
        </property>
        <property name="iconSize">
@@ -298,10 +303,10 @@
      <item>
       <spacer name="horizontalSpacer_3">
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
        <property name="sizeType">
-        <enum>QSizePolicy::Fixed</enum>
+        <enum>QSizePolicy::Policy::Fixed</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -320,7 +325,7 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset resource="PyLogBook.qrc">
+        <iconset>
          <normaloff>:/PyLogBook/Resources/Text Background.png</normaloff>:/PyLogBook/Resources/Text Background.png</iconset>
        </property>
        <property name="iconSize">
@@ -334,7 +339,7 @@
      <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>

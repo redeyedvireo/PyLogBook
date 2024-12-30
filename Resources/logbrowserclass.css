@@ -1,0 +1,5 @@
+<style type="text/css">
+div.logEntry:hover { background-color: #b0c4de; }
+a.logEntryLink { position:absolute; right:10px; color: #ffffff; text-decoration: none; cursor: text; }
+a.logEntryLink:hover { color: #0; text-decoration:underline; cursor:auto; }
+</style>

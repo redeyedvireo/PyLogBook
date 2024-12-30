@@ -1,4 +1,4 @@
-from PyQt5 import QtCore
+from PySide6 import QtCore
 import configparser
 import logging
 import os.path

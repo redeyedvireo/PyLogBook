@@ -1,5 +1,5 @@
 import logging
-from PyQt5 import QtCore, QtSql
+from PySide6 import QtCore, QtSql
 from pathlib import Path
 import datetime
 
@@ -58,6 +58,7 @@ class Database:
   def close(self):
     if self.db is not None:
       self.db.close()
+      self.db = None
 
   def reportError(self, errorMessage):
     logging.error(errorMessage)
@@ -85,12 +86,12 @@ class Database:
 
     queryObj.prepare(createStr)
 
-    queryObj.exec_()
+    queryObj.exec()
 
     # Check for errors
     sqlErr = queryObj.lastError()
 
-    if sqlErr.type() != QtSql.QSqlError.NoError:
+    if sqlErr.type() != QtSql.QSqlError.ErrorType.NoError:
       self.reportError( "Error when attempting to the globals table: {}".format(sqlErr.text()))
 
   def createLogsTable(self):
@@ -107,12 +108,12 @@ class Database:
 
     queryObj.prepare(createStr)
 
-    queryObj.exec_()
+    queryObj.exec()
 
     # Check for errors
     sqlErr = queryObj.lastError()
 
-    if sqlErr.type() != QtSql.QSqlError.NoError:
+    if sqlErr.type() != QtSql.QSqlError.ErrorType.NoError:
       self.reportError( "Error when attempting to the logs table: {}".format(sqlErr.text()))
 
   def getGlobalValue(self, key: str) -> int | str | bytes | None:
@@ -121,12 +122,12 @@ class Database:
     queryObj.prepare("select datatype from globals where key = ?")
     queryObj.bindValue(0, key)
 
-    queryObj.exec_()
+    queryObj.exec()
 
     # Check for errors
     sqlErr = queryObj.lastError()
 
-    if sqlErr.type() != QtSql.QSqlError.NoError:
+    if sqlErr.type() != QtSql.QSqlError.ErrorType.NoError:
       self.reportError("Error when attempting to retrieve a global value key: {}".format(sqlErr.text()))
       return None
 
@@ -153,11 +154,11 @@ class Database:
     queryObj.prepare(createStr)
     queryObj.bindValue(0, key)
 
-    queryObj.exec_()
+    queryObj.exec()
 
     # Check for errors
     sqlErr = queryObj.lastError()
-    if sqlErr.type() != QtSql.QSqlError.NoError:
+    if sqlErr.type() != QtSql.QSqlError.ErrorType.NoError:
       self.reportError("Error when attempting to retrieve a page: {}".format(sqlErr.text()))
       return None
 
@@ -186,12 +187,12 @@ class Database:
     queryObj.prepare("select datatype from globals where key = ?")
     queryObj.bindValue(0, key)
 
-    queryObj.exec_()
+    queryObj.exec()
 
     # Check for errors
     sqlErr = queryObj.lastError()
 
-    if sqlErr.type() != QtSql.QSqlError.NoError:
+    if sqlErr.type() != QtSql.QSqlError.ErrorType.NoError:
       self.reportError("Error when attempting to determine if a global value exists: {}".format(sqlErr.text()))
       return
 
@@ -237,12 +238,12 @@ class Database:
       queryObj.addBindValue(dataType)
       queryObj.addBindValue(value)
 
-    queryObj.exec_()
+    queryObj.exec()
 
     # Check for errors
     sqlErr = queryObj.lastError()
 
-    if sqlErr.type() != QtSql.QSqlError.NoError:
+    if sqlErr.type() != QtSql.QSqlError.ErrorType.NoError:
       self.reportError("Error when attempting to set a global value: {}".format(sqlErr.text()))
 
 
@@ -252,12 +253,12 @@ class Database:
     queryObj.prepare("select datatype from globals where key=?")
     queryObj.addBindValue(key)
 
-    queryObj.exec_()
+    queryObj.exec()
 
     # Check for errors
     sqlErr = queryObj.lastError()
 
-    if sqlErr.type() != QtSql.QSqlError.NoError:
+    if sqlErr.type() != QtSql.QSqlError.ErrorType.NoError:
       return False
     else:
       atLeastOne = queryObj.next()
@@ -300,11 +301,11 @@ class Database:
     queryStr = "select entryid from logs"
     queryObj.prepare(queryStr)
 
-    queryObj.exec_()
+    queryObj.exec()
 
     # Check for errors
     sqlErr = queryObj.lastError()
-    if sqlErr.type() != QtSql.QSqlError.NoError:
+    if sqlErr.type() != QtSql.QSqlError.ErrorType.NoError:
       self.reportError("SQLite error in GetEntryDates: {}".format(sqlErr.text()))
       return []
 
@@ -328,11 +329,11 @@ class Database:
     queryObj.prepare(queryStr)
     queryObj.addBindValue(entryId)
 
-    queryObj.exec_()
+    queryObj.exec()
 
     # Check for errors
     sqlErr = queryObj.lastError()
-    if sqlErr.type() != QtSql.QSqlError.NoError:
+    if sqlErr.type() != QtSql.QSqlError.ErrorType.NoError:
       self.reportError("Error when attempting to determine if an entry exists: {}".format(sqlErr.text()))
       return False
 
@@ -376,11 +377,11 @@ class Database:
     queryObj.addBindValue(encryptedData)
     queryObj.addBindValue(encryptedTags)
 
-    queryObj.exec_()
+    queryObj.exec()
 
     # Check for errors
     sqlErr = queryObj.lastError()
-    if sqlErr.type() != QtSql.QSqlError.NoError:
+    if sqlErr.type() != QtSql.QSqlError.ErrorType.NoError:
       self.reportError("Error when attempting to store a new log entry: {}".format(sqlErr.text()))
       return None
 
@@ -421,11 +422,11 @@ class Database:
       queryObj.addBindValue(existingLogEntry.numModifications)
       queryObj.addBindValue(entryId)
 
-      queryObj.exec_()
+      queryObj.exec()
 
       # Check for errors
       sqlErr = queryObj.lastError()
-      if sqlErr.type() != QtSql.QSqlError.NoError:
+      if sqlErr.type() != QtSql.QSqlError.ErrorType.NoError:
         self.reportError(f'Error when attempting to store a new log entry: {sqlErr.text()}')
         return False
       else:
@@ -440,11 +441,11 @@ class Database:
 
     queryObj.addBindValue(entryId)
 
-    queryObj.exec_()
+    queryObj.exec()
 
     # Check for errors
     sqlErr = queryObj.lastError()
-    if sqlErr.type() != QtSql.QSqlError.NoError:
+    if sqlErr.type() != QtSql.QSqlError.ErrorType.NoError:
       self.reportError("Error when attempting to retrieve a log entry: {}".format(sqlErr.text()))
       return None
 
