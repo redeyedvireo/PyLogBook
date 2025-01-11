@@ -12,7 +12,7 @@ First, create a virtual environment:
 Then, activate it:
 `.\venv\Scripts\activate`
 
-### PyQt
+### Pyside6
 `pip install Pyside6`
 
 ### cryptography
