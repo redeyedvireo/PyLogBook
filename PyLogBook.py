@@ -440,6 +440,7 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
     if len(filepathTuple[0]) > 0:
       xmlHandler = XmlHandler(self.db)
       success, entryIds, earliestDate, latestDate = xmlHandler.importLogFile(filepathTuple[0])
+
       if success:
         entryDates = [ julianDayToDate(d) for d in entryIds ]
         self.ui.logEntryTree.addLogDates(entryDates)

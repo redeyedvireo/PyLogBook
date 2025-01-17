@@ -1,3 +1,4 @@
+from PySide6 import QtCore, QtGui, QtWidgets
 import datetime
 import logging
 import xml.etree.ElementTree as ET
@@ -8,29 +9,60 @@ from utility import dateToJulianDay, formatDate, formatDateTime, julianDayToDate
 
 from constants import kLogEntryRoot, kLogEntry, kLogEntryId, kNumModifications, kLastModifiedDateTime, kTags, kLogEntryData
 
-class XmlHandler:
+class XmlHandler(QtCore.QObject):
   def __init__(self, db: Database) -> None:
     self.db = db
+    self.importCanceled = False
 
   def importLogFile(self, xmlLogFilePath) -> tuple[bool, list[int], datetime.date, datetime.date]:
     tree = ET.parse(xmlLogFilePath)
     root = tree.getroot()
 
+    numEntries = len(root)
+    print(f'Number of entries: {numEntries}')
+
     entryIds: list[int] = []
     earliestEntry = 0
     latestEntry = 0
+    numEntriesImported = 0
+    self.importCanceled = False
+
+    progressDialog = QtWidgets.QProgressDialog("Importing logs...", "Cancel", 0, numEntries)
+    progressDialog.setWindowTitle("Log Import")
+    progressDialog.setWindowModality(QtCore.Qt.WindowModality.WindowModal)
+    progressDialog.setMinimum(0)
+    progressDialog.setMaximum(numEntries)
+    progressDialog.setValue(0)
+
+    progressDialog.canceled.connect(self.onImportCanceled)
 
     for child in root:
-      entryIdOrNone = self.readLogEntry(child)
+      QtWidgets.QApplication.processEvents()
 
-      if entryIdOrNone is not None:
-        entryIds.append(entryIdOrNone)
-        earliestEntry = entryIdOrNone if earliestEntry == 0 else min(entryIdOrNone, earliestEntry)
-        latestEntry = max(entryIdOrNone, latestEntry)
+      if not self.importCanceled:
+        progressDialog.setValue(numEntriesImported)
+        entryIdOrNone = self.readLogEntry(child)
+
+        if entryIdOrNone is not None:
+          entryIds.append(entryIdOrNone)
+          earliestEntry = entryIdOrNone if earliestEntry == 0 else min(entryIdOrNone, earliestEntry)
+          latestEntry = max(entryIdOrNone, latestEntry)
+          numEntriesImported += 1
+        else:
+          return (False, entryIds, julianDayToDate(earliestEntry), julianDayToDate(latestEntry))
       else:
-        return (False, entryIds, julianDayToDate(earliestEntry), julianDayToDate(latestEntry))
+        # Import canceled
+        return (True, entryIds, julianDayToDate(earliestEntry), julianDayToDate(latestEntry))
 
     return (True, entryIds, julianDayToDate(earliestEntry), julianDayToDate(latestEntry))
+
+  @QtCore.Slot()
+  def onImportCanceled(self):
+    logging.info('Import canceled')
+    # TODO: Use a SQL Transaction:
+    # https://www.sqlite.org/lang_transaction.html
+    # self.db.rollback()
+    self.importCanceled = True
 
   def readLogEntry(self, logEntryElement) -> int | None:
     entryId = int(logEntryElement.attrib[kLogEntryId])
