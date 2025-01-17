@@ -6,11 +6,14 @@ import time
 import datetime
 from datetime import timezone
 
-def julianDayToDate(julianDay: int) -> datetime.date:
+def julianDayToDate(julianDay: int) -> datetime.date | None:
   """ Returns a Python date corresponding to the given Julian day. """
   qtDate = QtCore.QDate.fromJulianDay(julianDay)
-  date = qDateToPyDate(qtDate)
-  return date
+  if qtDate.isValid() and qtDate.year() > 0:
+    date = qDateToPyDate(qtDate)
+    return date
+  else:
+    return None
 
 def dateToJulianDay(inDate: datetime.date) -> int:
   """ Returns a Julian day for the given Python date. """

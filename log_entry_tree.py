@@ -23,7 +23,8 @@ class CLogEntryTree(QtWidgets.QTreeWidget):
 
     if entryId > 0:
       date = julianDayToDate(entryId)
-      self.logEntryClickedSignal.emit(date)
+      if date is not None:
+        self.logEntryClickedSignal.emit(date)
 
   def setLogDates(self, dateList: list[datetime.date]):
     self.logDates = dateList
