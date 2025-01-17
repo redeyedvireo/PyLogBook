@@ -243,12 +243,12 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
 
         self.tempNewLog = ''
 
-        fontSize = self.prefs.getEditorDefaultFontSize()
+        fontSize = self.prefs.editorDefaultFontSize
 
         if fontSize < 0:
           fontSize = 10
 
-        fontFamily = self.prefs.getEditorDefaultFontFamily()
+        fontFamily = self.prefs.editorDefaultFontFamily
         self.ui.logEdit.newDocument(fontFamily, fontSize)
 
         self.ui.tagsEdit.setText('')

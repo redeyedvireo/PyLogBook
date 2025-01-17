@@ -113,8 +113,17 @@ class LogBrowser(QtWidgets.QWidget):
     self.ui.numPagesLabel.setText(f'/ {self.getNumPages()} pages')
 
   def scrollToItem(self, inDate: datetime.date) -> None:
-    # TODO: Implement
-    pass
+    if inDate in self.logDates:
+      index = self.logDates.index(inDate)
+
+      pageNum = index / self.numEntriesPerPage
+      self.gotoPage(pageNum)
+
+      entryId = dateToJulianDay(inDate)
+
+      if entryId is not None:
+        # TODO: Scroll to the given date
+        pass
 
   def gotoPage(self, pageNum: int) -> None:
     if pageNum <= self.getNumPages() and pageNum > 0:
