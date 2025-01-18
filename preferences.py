@@ -54,8 +54,8 @@ class Preferences():
 
         self.prefsMap[kGeneralStartupLoad] = configObj.get('general', 'startupload', fallback=kStartupEmptyWorkspace)
         self.prefsMap[kEditorDefaultTextSize] = configObj.getint('editor', 'defaulttextsize', fallback=10)
+        self.prefsMap[kEditorDefaultFontFamily] = configObj.get('editor', 'defaultfontfamily', fallback='Arial')
         self.prefsMap[kBrowserLogsPerPage] = configObj.getint('browser', 'logsperpage', fallback=5)
-        self.prefsMap[kEditorDefaultFontFamily] = configObj.get('browser', 'defaultfontfamily', fallback='Arial')
         self.prefsMap[kFilesLastLogDirectory] = configObj.get('files', 'lastlogdirectory', fallback='')
         self.prefsMap[kFilesLastLogFile] = configObj.get('files', 'lastlogfile', fallback='')
         self.prefsMap[kWindowPos] = configObj.get('window', 'pos', fallback='')

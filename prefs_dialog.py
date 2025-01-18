@@ -26,11 +26,12 @@ class PrefsDialog(QtWidgets.QDialog):
       self.ui.loadPreviousLogRadio.setChecked(True)
 
     self.ui.defaultTextSizeSpin.setValue(self.prefs.editorDefaultFontSize)
+    self.ui.logsPerPageSpin.setValue(self.prefs.getNumEntriesPerPage())
 
     tempFont = QtGui.QFont()
     tempFont.setFamily(self.prefs.editorDefaultFontFamily)
 
-    self.ui.logsPerPageSpin.setValue(self.prefs.getNumEntriesPerPage())
+    self.ui.defaultFontCombo.setCurrentFont(tempFont)
 
   def onAccept(self):
     if self.ui.emptyWorkspaceRadio.isChecked():

@@ -40,7 +40,7 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
     self.ui.setupUi(self)
 
     prefsFilePath = self.getPrefsPath()
-    print(f'Prefs file: {prefsFilePath}')
+    logging.debug(f'Prefs file: {prefsFilePath}')
     self.prefs = Preferences(prefsFilePath)
 
     self.databaseFileName = ''
