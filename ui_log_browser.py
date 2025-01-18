@@ -15,15 +15,16 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QHBoxLayout, QLabel, QPushButton,
-    QSizePolicy, QSpacerItem, QSpinBox, QTextBrowser,
-    QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QAbstractSpinBox, QApplication, QHBoxLayout, QLabel,
+    QPushButton, QSizePolicy, QSpacerItem, QSpinBox,
+    QTextBrowser, QVBoxLayout, QWidget)
+import PyLogBook_rc
 
 class Ui_LogBrowserWidgetSimple(object):
     def setupUi(self, LogBrowserWidgetSimple):
         if not LogBrowserWidgetSimple.objectName():
             LogBrowserWidgetSimple.setObjectName(u"LogBrowserWidgetSimple")
-        LogBrowserWidgetSimple.resize(418, 605)
+        LogBrowserWidgetSimple.resize(511, 605)
         self.verticalLayout = QVBoxLayout(LogBrowserWidgetSimple)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setContentsMargins(2, 2, 2, 2)
@@ -34,20 +35,6 @@ class Ui_LogBrowserWidgetSimple(object):
 
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.beginButton = QPushButton(LogBrowserWidgetSimple)
-        self.beginButton.setObjectName(u"beginButton")
-
-        self.horizontalLayout.addWidget(self.beginButton)
-
-        self.previousButton = QPushButton(LogBrowserWidgetSimple)
-        self.previousButton.setObjectName(u"previousButton")
-
-        self.horizontalLayout.addWidget(self.previousButton)
-
-        self.horizontalSpacer = QSpacerItem(17, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout.addItem(self.horizontalSpacer)
-
         self.label = QLabel(LogBrowserWidgetSimple)
         self.label.setObjectName(u"label")
 
@@ -55,6 +42,7 @@ class Ui_LogBrowserWidgetSimple(object):
 
         self.pageSpin = QSpinBox(LogBrowserWidgetSimple)
         self.pageSpin.setObjectName(u"pageSpin")
+        self.pageSpin.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
 
         self.horizontalLayout.addWidget(self.pageSpin)
 
@@ -67,13 +55,35 @@ class Ui_LogBrowserWidgetSimple(object):
 
         self.horizontalLayout.addItem(self.horizontalSpacer_2)
 
+        self.beginButton = QPushButton(LogBrowserWidgetSimple)
+        self.beginButton.setObjectName(u"beginButton")
+        icon = QIcon()
+        icon.addFile(u":/PyLogBook/Resources/first-page.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.beginButton.setIcon(icon)
+
+        self.horizontalLayout.addWidget(self.beginButton)
+
+        self.previousButton = QPushButton(LogBrowserWidgetSimple)
+        self.previousButton.setObjectName(u"previousButton")
+        icon1 = QIcon()
+        icon1.addFile(u":/PyLogBook/Resources/previous-page.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.previousButton.setIcon(icon1)
+
+        self.horizontalLayout.addWidget(self.previousButton)
+
         self.nextButton = QPushButton(LogBrowserWidgetSimple)
         self.nextButton.setObjectName(u"nextButton")
+        icon2 = QIcon()
+        icon2.addFile(u":/PyLogBook/Resources/next-page.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.nextButton.setIcon(icon2)
 
         self.horizontalLayout.addWidget(self.nextButton)
 
         self.endButton = QPushButton(LogBrowserWidgetSimple)
         self.endButton.setObjectName(u"endButton")
+        icon3 = QIcon()
+        icon3.addFile(u":/PyLogBook/Resources/last-page.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.endButton.setIcon(icon3)
 
         self.horizontalLayout.addWidget(self.endButton)
 
@@ -88,11 +98,11 @@ class Ui_LogBrowserWidgetSimple(object):
 
     def retranslateUi(self, LogBrowserWidgetSimple):
         LogBrowserWidgetSimple.setWindowTitle(QCoreApplication.translate("LogBrowserWidgetSimple", u"Form", None))
-        self.beginButton.setText(QCoreApplication.translate("LogBrowserWidgetSimple", u"Beginning", None))
-        self.previousButton.setText(QCoreApplication.translate("LogBrowserWidgetSimple", u"Previous", None))
         self.label.setText(QCoreApplication.translate("LogBrowserWidgetSimple", u"Page:", None))
-        self.numPagesLabel.setText(QCoreApplication.translate("LogBrowserWidgetSimple", u"/ %1 pages", None))
-        self.nextButton.setText(QCoreApplication.translate("LogBrowserWidgetSimple", u"Next", None))
-        self.endButton.setText(QCoreApplication.translate("LogBrowserWidgetSimple", u"End", None))
+        self.numPagesLabel.setText(QCoreApplication.translate("LogBrowserWidgetSimple", u"%1 pages", None))
+        self.beginButton.setText("")
+        self.previousButton.setText("")
+        self.nextButton.setText("")
+        self.endButton.setText("")
     # retranslateUi
 

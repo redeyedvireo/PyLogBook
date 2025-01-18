@@ -1,22 +1,26 @@
 <RCC>
-    <qresource prefix="/PyLogBook">
-        <file>Resources/Text Background.png</file>
-        <file>Resources/Text Foreground.png</file>
-        <file>Resources/No Color.png</file>
-        <file>Resources/Bullet Table.png</file>
-        <file>Resources/Number Table.png</file>
-        <file>Resources/Underline.png</file>
-        <file>Resources/Italic.png</file>
-        <file>Resources/Bold.png</file>
-        <file>Resources/Right.png</file>
-        <file>Resources/Center.png</file>
-        <file>Resources/Left.png</file>
-        <file>Resources/pencil.png</file>
-        <file>Resources/plus.png</file>
-        <file>Resources/minus.png</file>
-    </qresource>
-    <qresource prefix="/files">
-        <file>Resources/logbrowserclass.css</file>
-        <file>Resources/logbrowserfunc.js</file>
-    </qresource>
+  <qresource prefix="/PyLogBook">
+    <file>Resources/first-page.png</file>
+    <file>Resources/last-page.png</file>
+    <file>Resources/next-page.png</file>
+    <file>Resources/previous-page.png</file>
+    <file>Resources/Text Background.png</file>
+    <file>Resources/Text Foreground.png</file>
+    <file>Resources/No Color.png</file>
+    <file>Resources/Bullet Table.png</file>
+    <file>Resources/Number Table.png</file>
+    <file>Resources/Underline.png</file>
+    <file>Resources/Italic.png</file>
+    <file>Resources/Bold.png</file>
+    <file>Resources/Right.png</file>
+    <file>Resources/Center.png</file>
+    <file>Resources/Left.png</file>
+    <file>Resources/pencil.png</file>
+    <file>Resources/plus.png</file>
+    <file>Resources/minus.png</file>
+  </qresource>
+  <qresource prefix="/files">
+    <file>Resources/logbrowserclass.css</file>
+    <file>Resources/logbrowserfunc.js</file>
+  </qresource>
 </RCC>
