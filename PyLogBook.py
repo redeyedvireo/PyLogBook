@@ -101,6 +101,9 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
 
   def openLogFile(self) -> bool:
     if len(self.getDatabasePath()) > 0:
+
+      success = False
+
       if self.db.openDatabase(self.getDatabasePath()):
         if self.db.isPasswordProtected():
           password = ''
@@ -128,14 +131,19 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
               self.db.closeDatabase()
               return False
 
-        # These 3 calls are done in on_actionOpen_triggered
         self.setInitialBrowserEntries()
+        self.initControls()
+        self.setInitialEntryToDisplay()
+        self.enableLogEntry(True)
 
         self.setAppTitle()
         self.prefs.setLogFilePath(self.getDatabasePath())
-        return True
+        success = True
       else:
-        return False
+        success = False
+
+      self.enableLogEntry(success)
+      return success
     else:
       return False
 
@@ -420,11 +428,7 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
       self.logDir = os.path.dirname(dbFilePath)
       self.databaseFileName = os.path.basename(dbFilePath)
 
-      if self.openLogFile():
-
-        self.enableLogEntry(True)
-        self.initControls()
-        self.setInitialEntryToDisplay()
+      self.openLogFile()
 
   @QtCore.Slot()
   def on_actionClose_triggered(self):
