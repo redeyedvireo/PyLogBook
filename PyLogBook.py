@@ -91,8 +91,7 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
         self.databaseFileName = logFileName
         self.logDir = logFileDir
 
-        if not self.openLogFile():
-          self.enableLogEntry(False)
+        self.openLogFile()
       return
 
     # Just show an empty workspace
@@ -284,15 +283,16 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
       entryId = dateToJulianDay(self.currentDate)
 
     self.currentEntryId = entryId
+    removeTemporaryDay = True
 
     if self.currentEntryId == kTempItemId:
       # This is the first item entered - Connect database to log browser and log tree
       self.createNewLogEntry(self.currentDate)
+      removeTemporaryDay = False
 
       # TODO: Hide the "Add Addendum" button (need a function that shows/hides appropriate buttons)
-    else:
-      # Fetch the entry
-      self.setDateCurrent(julianDayToDate(entryId), True)
+
+    self.setDateCurrent(self.currentDate, True, removeTemporaryDay)
 
   def setInitialBrowserEntries(self):
     dateList = self.db.getEntryDates()
@@ -357,8 +357,9 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
     # Add entry to the log entry tree
     self.ui.logEntryTree.addLogDate(self.currentDate)
 
-  def setDateCurrent(self, inDate: datetime.date, scrollLogBrowser: bool):
-    self.removeTemporaryDay()
+  def setDateCurrent(self, inDate: datetime.date, scrollLogBrowser: bool, removeTemporaryDay = True):
+    if removeTemporaryDay:
+      self.removeTemporaryDay()
 
     # Scroll to this date in the log tree
     self.ui.logEntryTree.setCurrentDate(inDate)

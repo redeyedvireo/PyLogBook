@@ -116,7 +116,7 @@ class LogBrowser(QtWidgets.QWidget):
     if inDate in self.logDates:
       index = self.logDates.index(inDate)
 
-      pageNum = index / self.numEntriesPerPage
+      pageNum = index // self.numEntriesPerPage   # Integer division
       self.gotoPage(pageNum)
 
       entryId = dateToJulianDay(inDate)
