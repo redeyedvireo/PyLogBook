@@ -473,3 +473,20 @@ class Database:
     else:
       # No entry found
       return None
+
+  def numLogEntries(self) -> int:
+    queryObj = QtSql.QSqlQuery(self.db)
+    queryObj.prepare("select count(*)")
+
+    queryObj.exec()
+
+    # Check for errors
+    sqlErr = queryObj.lastError()
+    if sqlErr.type() != QtSql.QSqlError.ErrorType.NoError:
+      self.reportError("Error when attempting to count log entries: {}".format(sqlErr.text()))
+      return 0
+
+    if queryObj.next():
+      return queryObj.value(0)
+    else:
+      return 0

@@ -467,10 +467,10 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
     if len(filepathTuple[0]) > 0:
       filepath = filepathTuple[0]
       xmlHandler = XmlHandler(self.db)
-      success = xmlHandler.exportLogFile(filepath)
+      success, numEntriesExported = xmlHandler.exportLogFile(filepath)
 
       if success:
-        QtWidgets.QMessageBox.information(self, 'Log Export', 'Exported to XML successfully.')
+        QtWidgets.QMessageBox.information(self, 'Log Export', f'Exported {numEntriesExported} log entries.')
       else:
         QtWidgets.QMessageBox.information(self, 'Log Export', 'An error occurred exporting to XML.')
 
