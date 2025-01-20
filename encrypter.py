@@ -9,6 +9,7 @@ class Encrypter():
   def __init__(self) -> None:
     self.plainTextPassword = ''
     self.salt = b''
+    self.fernet = None
 
   def hasPassword(self) -> bool:
     return len(self.plainTextPassword) > 0
@@ -16,10 +17,12 @@ class Encrypter():
   def setPasswordAndSalt(self, plainTextPassword: str, salt: bytes) -> None:
     self.plainTextPassword = plainTextPassword
     self.salt = salt
+    self.fernet = self.createFernet()
 
   def setPasswordGenerateSalt(self, plainTextPassword: str) -> None:
     self.plainTextPassword = plainTextPassword
     self.salt = os.urandom(16)
+    self.fernet = self.createFernet()
 
   def clear(self):
     self.plainTextPassword = ''
@@ -56,22 +59,18 @@ class Encrypter():
     if len(self.salt) == 0 or len(self.plainTextPassword) == 0:
       return b''
 
-    f = self.createFernet()
+    if self.fernet is None:
+      raise Exception('Encrypt: fernet not initialized.')
 
-    if f is not None:
-      contentsBytes = bytes(contents, 'utf-8')
-      encryptedContents = f.encrypt(contentsBytes)
+    contentsBytes = bytes(contents, 'utf-8')
+    encryptedContents = self.fernet.encrypt(contentsBytes)
 
-      return encryptedContents
-    else:
-      return b''
+    return encryptedContents
 
   def decrypt(self, encryptedContents: bytes) -> str:
-    f = self.createFernet()
+    if self.fernet is None:
+      raise Exception('Decrypt: fernet not initialized.')
 
-    if f is not None:
-      decryptedContentsBytes = f.decrypt(encryptedContents)
-      decryptedContentsStr = decryptedContentsBytes.decode()
-      return decryptedContentsStr
-    else:
-      return ''
+    decryptedContentsBytes = self.fernet.decrypt(encryptedContents)
+    decryptedContentsStr = decryptedContentsBytes.decode()
+    return decryptedContentsStr

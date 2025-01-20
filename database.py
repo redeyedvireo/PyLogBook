@@ -274,7 +274,7 @@ class Database:
     if salt is not None and isinstance(salt, bytes):
       self.encrypter.setPasswordAndSalt(plainTextPassword, salt)
 
-  def storePassword(self, plainTextPassword) -> None:
+  def storePasswordInDatabase(self, plainTextPassword) -> None:
     """ Sets the password for a new log file.  The salt is generated here. """
     if len(plainTextPassword) > 0:
       self.encrypter.setPasswordGenerateSalt(plainTextPassword)

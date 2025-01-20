@@ -402,7 +402,7 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
       self.db.open(filepath)
 
       if len(password) > 0:
-        self.db.storePassword(password)
+        self.db.storePasswordInDatabase(password)
 
       # Create new entry for today
       self.clearAllControls()
