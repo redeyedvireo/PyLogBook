@@ -522,10 +522,9 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
     self.ui.logEdit.setDocumentModified(False)
     self.ui.submitButton.setEnabled(False)
 
-
   def onDisplayLogEntryScrollBrowser(self, date: datetime.date) -> None:
     entryId = dateToJulianDay(date)
-    self.onDisplayLogEntry(entryId, False)
+    self.onDisplayLogEntry(entryId, True)
 
   def checkSaveLog(self) -> bool:
     """ If the current log entry is modified but not saved, asks the user whether he wants to save, and

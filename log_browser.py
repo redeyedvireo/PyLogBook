@@ -13,7 +13,7 @@ class LogBrowser(QtWidgets.QWidget):
 
     self.logDates: list[datetime.date] = []
     self.numEntriesPerPage = 5
-    self.currentPageNum = 0
+    self.currentPageNum = 0       # Zero-based page number
     self.db = None
 
     self.ui.pageSpin.setEnabled(False)
@@ -109,62 +109,73 @@ class LogBrowser(QtWidgets.QWidget):
 
     return int(numPages)
 
+  def getLastPage(self):
+    numPages = self.getNumPages()
+    return numPages - 1 if numPages > 0 else 0
+
   def updateNumberOfPagesLabel(self):
     self.ui.numPagesLabel.setText(f'/ {self.getNumPages()} pages')
 
   def scrollToItem(self, inDate: datetime.date) -> None:
     if inDate in self.logDates:
       index = self.logDates.index(inDate)
-
       pageNum = index // self.numEntriesPerPage   # Integer division
-      self.gotoPage(pageNum)
+    elif inDate == datetime.date.today():
+      # This might be the "temporary day"
+      pageNum = self.getLastPage()
 
-      entryId = dateToJulianDay(inDate)
+    self.gotoPage(pageNum)
 
-      if entryId is not None:
-        # TODO: Scroll to the given date
-        pass
+    entryId = dateToJulianDay(inDate)
+
+    if entryId is not None:
+      # TODO: Scroll to the given date
+      pass
 
   def gotoPage(self, pageNum: int) -> None:
-    if pageNum <= self.getNumPages() and pageNum > 0:
-      # See if this page is already current
-      zeroBasedPageNum = pageNum - 1
+    """Displays the given page in the browser.  The page number is zero-based.
 
-      if self.currentPageNum != zeroBasedPageNum:
-        self.currentPageNum = zeroBasedPageNum
+    Args:
+        pageNum (int): Zero-based page number
+    """
+    if pageNum <= self.getNumPages() and pageNum >= 0:
+      # See if this page is already current
+
+      if self.currentPageNum != pageNum:
+        self.currentPageNum = pageNum
         self.displayCurrentBrowserPage()
 
-        # Update horizontal scroll bar
-        self.ui.pageSpin.setValue(pageNum)
+        # Update page spinner
+        oneBasedPageNum = pageNum + 1
+        self.ui.pageSpin.setValue(oneBasedPageNum)
 
-        self.ui.nextButton.setEnabled(pageNum < self.getNumPages())
-        self.ui.previousButton.setEnabled(pageNum > 1)
+        self.ui.nextButton.setEnabled(oneBasedPageNum < self.getNumPages())
+        self.ui.previousButton.setEnabled(oneBasedPageNum > 1)
 
   def getCurrentPageAsOneBasedNumber(self) -> int:
     return self.currentPageNum + 1
 
   @QtCore.Slot()
   def onBeginButtonClicked(self):
-    self.gotoPage(1)
+    self.gotoPage(0)
 
   @QtCore.Slot()
   def onEndButtonClicked(self):
-    self.gotoPage(self.getNumPages())
+    self.gotoPage(self.getLastPage())
 
   @QtCore.Slot()
   def onPreviousButtonClicked(self):
-    curPage = self.getCurrentPageAsOneBasedNumber()
-
-    if curPage > 1:
-      self.gotoPage(curPage - 1)
+    if self.currentPageNum > 0:
+      self.gotoPage(self.currentPageNum - 1)
 
   @QtCore.Slot()
   def onNextButtonClicked(self):
-    curPage = self.getCurrentPageAsOneBasedNumber()
-
-    if curPage < self.getNumPages():
-      self.gotoPage(curPage + 1)
+    if self.currentPageNum < self.getNumPages() - 1:
+      self.gotoPage(self.currentPageNum + 1)
 
   @QtCore.Slot(int)
   def onPageSpinValueChanged(self, value: int):
-    self.gotoPage(value)
+    zeroBasedPageNumber = value - 1
+    destinationPageNum = min(max(zeroBasedPageNumber, 0), self.getNumPages() - 1)
+
+    self.gotoPage(destinationPageNum)
