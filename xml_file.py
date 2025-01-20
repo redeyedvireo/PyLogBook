@@ -47,11 +47,16 @@ class XmlHandler(QtCore.QObject):
           entryIds.append(entryIdOrNone)
           earliestEntry = entryIdOrNone if earliestEntry == 0 else min(entryIdOrNone, earliestEntry)
           latestEntry = max(entryIdOrNone, latestEntry)
-          numEntriesImported += 1
         else:
-          return (False, entryIds, julianDayToDate(earliestEntry), julianDayToDate(latestEntry))
+          logging.error(f'[importLogFile] Error reading log entry')
+
+        numEntriesImported += 1
+        progressDialog.setLabelText(f'Imported {numEntriesImported} of {numEntries}')
       else:
         # Import canceled
+        # TODO: Use a SQL Transaction:
+        # https://www.sqlite.org/lang_transaction.html
+        # self.db.rollback()
         return (True, entryIds, julianDayToDate(earliestEntry), julianDayToDate(latestEntry))
 
     return (True, entryIds, julianDayToDate(earliestEntry), julianDayToDate(latestEntry))
@@ -59,9 +64,7 @@ class XmlHandler(QtCore.QObject):
   @QtCore.Slot()
   def onImportCanceled(self):
     logging.info('Import canceled')
-    # TODO: Use a SQL Transaction:
-    # https://www.sqlite.org/lang_transaction.html
-    # self.db.rollback()
+
     self.importCanceled = True
 
   def readLogEntry(self, logEntryElement) -> int | None:
@@ -126,7 +129,7 @@ class XmlHandler(QtCore.QObject):
 
       numEntriesExported += 1
       progressDialog.setValue(numEntriesExported)
-      progressDialog.setLabelText(f'Exprted {numEntriesExported} of {numEntries}')
+      progressDialog.setLabelText(f'Exported {numEntriesExported} of {numEntries}')
 
     elementTree = ET.ElementTree(root)
 
