@@ -62,7 +62,8 @@ class LogBrowser(QtWidgets.QWidget):
     if insertHLineBefore:
       self.ui.textBrowser.insertHtml('<br><hr><br>')
 
-    headerText = f'<h3>{formatDate(date)}</h3><br>'
+    entryId = dateToJulianDay(date)
+    headerText = f'<a name="{entryId}"><h3>{formatDate(date)}</h3></a><br>'
     self.ui.textBrowser.insertHtml(headerText)
     self.ui.textBrowser.insertHtml(content)
 
@@ -129,8 +130,8 @@ class LogBrowser(QtWidgets.QWidget):
     entryId = dateToJulianDay(inDate)
 
     if entryId is not None:
-      # TODO: Scroll to the given date
-      pass
+      # Scroll to the given date
+      self.ui.textBrowser.scrollToAnchor(f'{entryId}')
 
   def gotoPage(self, pageNum: int) -> None:
     """Displays the given page in the browser.  The page number is zero-based.
