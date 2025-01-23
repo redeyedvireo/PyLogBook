@@ -125,7 +125,7 @@ class RichTextEditWidget(QtWidgets.QWidget):
 
       self.ui.textEdit.setTextCursor(selectionCursor)
 
-      tempFont = QtGui.QFont(fontFamily, fontSize)
+      tempFont = QtGui.QFont(fontFamily, fontSizeToUse)
       doc = self.ui.textEdit.document()
 
       doc.setDefaultFont(tempFont)
@@ -146,7 +146,7 @@ class RichTextEditWidget(QtWidgets.QWidget):
         curFontSize = int(fontSizeStr)
         maxFontSize = max(maxFontSize, curFontSize)
 
-        if curFontSize > fontSize:
+        if curFontSize >= fontSize:
           return curFontSize
 
     # fontSize is larger than any font in the combo box.  In this
