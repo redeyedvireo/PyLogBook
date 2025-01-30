@@ -9,6 +9,7 @@ from utility import formatDateTime
 
 class RichTextEditWidget(QtWidgets.QWidget):
   logTextChangedSignal = QtCore.Signal()
+  stylesChangedSignal = QtCore.Signal()
 
   def __init__(self, parent):
     super(RichTextEditWidget, self).__init__(parent)
@@ -34,7 +35,6 @@ class RichTextEditWidget(QtWidgets.QWidget):
     self.ui.textEdit.selectionChanged.connect(self.onSelectionChanged)
     self.ui.textEdit.textChanged.connect(self.onTextChanged)
     self.ui.textEdit.cursorPositionChanged.connect(self.onCursorPositionChanged)
-    self.ui.styleButton.triggered.connect(self.onStyleButtonTriggered)
     self.ui.boldButton.clicked.connect(self.onBoldButtonClicked)
     self.ui.italicButton.clicked.connect(self.onItalicButtonClicked)
     self.ui.underlineButton.clicked.connect(self.onUnderlineButtonClicked)
@@ -54,9 +54,6 @@ class RichTextEditWidget(QtWidgets.QWidget):
       self.ui.sizeCombo.addItem(fontSizeString)
 
   def initStyleButton(self):
-    # TODO: Need to get the settings from the user's prefs file.  This will
-    # probably be read at startup.
-
     # TODO: Should add a way for the user to import/export the style settings.
     self.styleMenu.clear()
 
@@ -71,17 +68,10 @@ class RichTextEditWidget(QtWidgets.QWidget):
 
     self.ui.styleButton.setMenu(self.styleMenu)
 
-  def initialize(self, fontFamily: str, fontSize: int, styleFilePath: str, styleManager: StyleManager):
+  def initialize(self, fontFamily: str, fontSize: int, styleManager: StyleManager):
     self.styleManager = styleManager
     self.initStyleButton()
     self.setGlobalFont(fontFamily, fontSize)
-    self.loadStyles(styleFilePath)
-
-  def loadStyles(self, styleFilePath: str):
-    self.styleManager.loadStyleDefs(styleFilePath)
-
-  def saveStyles(self, styleFilePath: str):
-    self.styleManager.saveStyleDefs(styleFilePath)
 
   def clear(self):
     self.ui.textEdit.clear()
@@ -279,7 +269,7 @@ class RichTextEditWidget(QtWidgets.QWidget):
     self.ui.styleButton.setEnabled(selectionCursor.hasSelection())
 
   @QtCore.Slot(QtGui.QAction)
-  def onStyleButtonTriggered(self, action):
+  def on_styleButton_triggered(self, action):
     """ A 'triggered' event happens when the user changes
         the current item in the style button. """
     styleId = action.data()
@@ -405,3 +395,4 @@ class RichTextEditWidget(QtWidgets.QWidget):
       if styleId is not None:
         self.styleManager.applyStyle(self.ui.textEdit, styleId)
         self.initStyleButton()
+        self.stylesChangedSignal.emit()

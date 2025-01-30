@@ -46,6 +46,7 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
     self.databaseFileName = ''
     self.logDir = scriptDir
     self.db = Database()
+    self.styleManager = StyleManager()
 
     self.currentDate = datetime.date.today()
     self.currentEntryId = dateToJulianDay(self.currentDate)
@@ -57,13 +58,14 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
     self.ui.curMonth.dateSelectedSignal.connect(self.onDisplayLogEntryScrollBrowser)
     self.ui.logEdit.logTextChangedSignal.connect(self.onLogTextChanged)
     self.ui.logEntryTree.logEntryClickedSignal.connect(self.onDisplayLogEntryScrollBrowser)
+    self.ui.logEdit.stylesChangedSignal.connect(self.onStylesChanged)
 
     QtCore.QTimer.singleShot(0, self.initialize)
 
   def initialize(self):
     logging.info("Starting application...")
 
-    self.styleManager = StyleManager()
+    self.styleManager.loadStyleDefs(self.getStyleDefsPath())
 
     # Disallow deleting log entries.  In the future, might want to have a
     # preference that allows entries to be deleted.
@@ -80,7 +82,7 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
     if size is not None:
       self.resize(size)
 
-    self.ui.logEdit.initialize(self.prefs.editorDefaultFontFamily, self.prefs.editorDefaultFontSize, self.getStyleDefsPath(), self.styleManager)
+    self.ui.logEdit.initialize(self.prefs.editorDefaultFontFamily, self.prefs.editorDefaultFontSize, self.styleManager)
 
     self.ui.logBrowser.setNumEntriesPerPage(self.prefs.getNumEntriesPerPage())
 
@@ -158,6 +160,10 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
       self.clearAllControls()
       self.enableLogEntry(False)
       self.setAppTitle()
+
+  def saveStyles(self):
+    styleFilePath = self.getStyleDefsPath()
+    self.styleManager.saveStyleDefs(styleFilePath)
 
   def getDatabasePath(self) -> str:
     # TODO: Move this to a common location, along with getPrefsPath and getDatabasePath.
@@ -496,6 +502,9 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
   @QtCore.Slot()
   def onLogTextChanged(self):
     self.ui.submitButton.setEnabled(True)
+
+  def onStylesChanged(self):
+    self.saveStyles()
 
   @QtCore.Slot()
   def onSubmitButtonClicked(self):
