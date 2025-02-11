@@ -273,6 +273,8 @@ class RichTextEditWidget(QtWidgets.QWidget):
     """ A 'triggered' event happens when the user changes
         the current item in the style button. """
     styleId = action.data()
+    if self.styleManager:
+      self.styleManager.applyStyle(self.ui.textEdit, styleId)
 
   @QtCore.Slot()
   def onBoldButtonClicked(self):
