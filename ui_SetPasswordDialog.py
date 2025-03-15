@@ -24,14 +24,14 @@ class Ui_SetPasswordDlg(object):
     def setupUi(self, SetPasswordDlg):
         if not SetPasswordDlg.objectName():
             SetPasswordDlg.setObjectName(u"SetPasswordDlg")
-        SetPasswordDlg.resize(371, 327)
+        SetPasswordDlg.resize(371, 367)
         self.verticalLayout = QVBoxLayout(SetPasswordDlg)
         self.verticalLayout.setSpacing(6)
         self.verticalLayout.setContentsMargins(11, 11, 11, 11)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.label = QLabel(SetPasswordDlg)
         self.label.setObjectName(u"label")
-        self.label.setTextFormat(Qt.AutoText)
+        self.label.setTextFormat(Qt.TextFormat.AutoText)
         self.label.setWordWrap(True)
 
         self.verticalLayout.addWidget(self.label)
@@ -43,7 +43,7 @@ class Ui_SetPasswordDlg(object):
         self.formLayout = QFormLayout()
         self.formLayout.setSpacing(6)
         self.formLayout.setObjectName(u"formLayout")
-        self.formLayout.setLabelAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.formLayout.setLabelAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
         self.label_2 = QLabel(SetPasswordDlg)
         self.label_2.setObjectName(u"label_2")
 
@@ -51,7 +51,7 @@ class Ui_SetPasswordDlg(object):
 
         self.passwordEdit = QLineEdit(SetPasswordDlg)
         self.passwordEdit.setObjectName(u"passwordEdit")
-        self.passwordEdit.setEchoMode(QLineEdit.Password)
+        self.passwordEdit.setEchoMode(QLineEdit.EchoMode.Password)
 
         self.formLayout.setWidget(0, QFormLayout.FieldRole, self.passwordEdit)
 
@@ -62,24 +62,38 @@ class Ui_SetPasswordDlg(object):
 
         self.reEnterPasswordEdit = QLineEdit(SetPasswordDlg)
         self.reEnterPasswordEdit.setObjectName(u"reEnterPasswordEdit")
-        self.reEnterPasswordEdit.setEchoMode(QLineEdit.Password)
+        self.reEnterPasswordEdit.setEchoMode(QLineEdit.EchoMode.Password)
 
         self.formLayout.setWidget(1, QFormLayout.FieldRole, self.reEnterPasswordEdit)
 
+        self.passwordsNotMatchLabel = QLabel(SetPasswordDlg)
+        self.passwordsNotMatchLabel.setObjectName(u"passwordsNotMatchLabel")
+        font = QFont()
+        font.setPointSize(11)
+        self.passwordsNotMatchLabel.setFont(font)
+        self.passwordsNotMatchLabel.setStyleSheet(u"color: red")
+
+        self.formLayout.setWidget(2, QFormLayout.FieldRole, self.passwordsNotMatchLabel)
+
 
         self.verticalLayout.addLayout(self.formLayout)
+
+        self.verticalSpacer_2 = QSpacerItem(20, 21, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+
+        self.verticalLayout.addItem(self.verticalSpacer_2)
 
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setSpacing(6)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.noPasswordButton = QPushButton(SetPasswordDlg)
         self.noPasswordButton.setObjectName(u"noPasswordButton")
+        self.noPasswordButton.setMinimumSize(QSize(95, 0))
 
         self.horizontalLayout.addWidget(self.noPasswordButton)
 
         self.buttonBox = QDialogButtonBox(SetPasswordDlg)
         self.buttonBox.setObjectName(u"buttonBox")
-        self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
+        self.buttonBox.setStandardButtons(QDialogButtonBox.StandardButton.Cancel|QDialogButtonBox.StandardButton.Ok)
 
         self.horizontalLayout.addWidget(self.buttonBox)
 
@@ -110,6 +124,7 @@ class Ui_SetPasswordDlg(object):
                         "-weight:600;\">Without the password, it will be impossible to access, export, print or otherwise view the log file.  If the password is lost, the contents of the log file cannot be retrieved.  Take care to ensure the safety of the password.</span></p></body></html>", None))
         self.label_2.setText(QCoreApplication.translate("SetPasswordDlg", u"Password", None))
         self.label_3.setText(QCoreApplication.translate("SetPasswordDlg", u"Re-enter Password", None))
+        self.passwordsNotMatchLabel.setText(QCoreApplication.translate("SetPasswordDlg", u"Passwords do not match", None))
         self.noPasswordButton.setText(QCoreApplication.translate("SetPasswordDlg", u"No Password", None))
     # retranslateUi
 

@@ -405,6 +405,10 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
       if dlg.exec() == QtWidgets.QDialog.DialogCode.Accepted:
         password = dlg.getPassword()
 
+      else:
+        # User clicked Cancel on the password dialog - don't create a new LogBook
+        return
+
       self.db.open(filepath)
 
       if len(password) > 0:
@@ -417,6 +421,7 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
       self.setInitialEntryToDisplay()
 
       self.setAppTitle()
+      self.prefs.setLogFilePath(self.getDatabasePath())
 
   @QtCore.Slot()
   def on_actionOpen_triggered(self):
