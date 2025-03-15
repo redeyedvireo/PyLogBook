@@ -54,5 +54,4 @@ class CCalendar(QtWidgets.QCalendarWidget):
   @QtCore.Slot(QtCore.QDate)
   def onDateClicked(self, qtDate: QtCore.QDate):
     date = qDateToPyDate(qtDate)
-    print(f'Date clicked: {date}')
     self.dateSelectedSignal.emit(date)
