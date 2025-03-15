@@ -124,6 +124,9 @@ class LogBrowser(QtWidgets.QWidget):
     elif inDate == datetime.date.today():
       # This might be the "temporary day"
       pageNum = self.getLastPage()
+    else:
+      # Date not found - do nothing
+      return
 
     self.gotoPage(pageNum)
 
@@ -151,7 +154,9 @@ class LogBrowser(QtWidgets.QWidget):
         self.ui.pageSpin.setValue(oneBasedPageNum)
 
         self.ui.nextButton.setEnabled(oneBasedPageNum < self.getNumPages())
+        self.ui.endButton.setEnabled(oneBasedPageNum < self.getNumPages())
         self.ui.previousButton.setEnabled(oneBasedPageNum > 1)
+        self.ui.beginButton.setEnabled(oneBasedPageNum > 1)
 
   def getCurrentPageAsOneBasedNumber(self) -> int:
     return self.currentPageNum + 1
