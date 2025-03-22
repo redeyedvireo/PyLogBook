@@ -19,6 +19,10 @@ class RichTextEditWidget(QtWidgets.QWidget):
 
     self.styleManager = StyleManager()
 
+    # These get set to the preferences values in the initialize() function
+    self.defaultFontFamily = 'Arial'
+    self.defaultFontSize = 10
+
     self.populatePointSizesCombo()
     self.ui.textColorButton.setColor(QtGui.QColor('Black'))
 
@@ -70,6 +74,9 @@ class RichTextEditWidget(QtWidgets.QWidget):
 
   def initialize(self, fontFamily: str, fontSize: int, styleManager: StyleManager):
     self.styleManager = styleManager
+    self.defaultFontFamily = fontFamily
+    self.defaultFontSize = fontSize
+
     self.initStyleButton()
     self.setGlobalFont(fontFamily, fontSize)
 
@@ -275,6 +282,7 @@ class RichTextEditWidget(QtWidgets.QWidget):
     styleId = action.data()
     if self.styleManager:
       self.styleManager.applyStyle(self.ui.textEdit, styleId)
+      self.updateControls()
 
   @QtCore.Slot()
   def onBoldButtonClicked(self):
@@ -390,11 +398,13 @@ class RichTextEditWidget(QtWidgets.QWidget):
 
   @QtCore.Slot()
   def on_styleButton_clicked(self):
-    styleDlg = SelectStyleDialog(self, self.styleManager)
+    styleDlg = SelectStyleDialog(self, self.styleManager, self.defaultFontFamily, self.defaultFontSize)
+
     if styleDlg.exec() == QtWidgets.QDialog.DialogCode.Accepted:
       styleId = styleDlg.getSelectedStyle()
 
       if styleId is not None:
         self.styleManager.applyStyle(self.ui.textEdit, styleId)
+        self.updateControls()
         self.initStyleButton()
         self.stylesChangedSignal.emit()

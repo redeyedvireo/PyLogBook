@@ -6,12 +6,14 @@ from style_dlg import StyleDlg
 from style_manager import StyleManager, kUserStyleStartIndex
 
 class SelectStyleDialog(QtWidgets.QDialog):
-  def __init__(self, parent, styleManager: StyleManager):
+  def __init__(self, parent, styleManager: StyleManager, defaultFontFamily: str, defaultFontSize: int):
     super(SelectStyleDialog, self).__init__(parent)
 
     self.ui = Ui_SelectStyleDlg()
     self.ui.setupUi(self)
 
+    self.defaultFontFamily = defaultFontFamily
+    self.defaultFontSize = defaultFontSize
     self.styleManager = styleManager
     self.loadStyles()
 
@@ -25,10 +27,21 @@ class SelectStyleDialog(QtWidgets.QDialog):
       if styleDefOrNone is not None:
         self.addStyle(styleDefOrNone.strName, styleId)
 
-  def addStyle(self, styleName: str, styleId: int) -> None:
+  def addStyle(self, styleName: str, styleId: int):
+    """Adds a style to the list.  Returns the row number of the added style.
+
+    Args:
+        styleName (str): Name of style
+        styleId (int): Style ID
+
+    Returns:
+        int: Row number of the added style
+    """
     item = QtWidgets.QListWidgetItem(styleName)
     item.setData(QtCore.Qt.ItemDataRole.UserRole, styleId)
     self.ui.styleList.addItem(item)
+    numRows = self.ui.styleList.count()
+    return numRows - 1
 
   def getStyleIdForRow(self, row: int) -> int:
     item = self.ui.styleList.item(row)
@@ -65,7 +78,8 @@ class SelectStyleDialog(QtWidgets.QDialog):
   def on_newButton_clicked(self) -> None:
     styleDef = StyleDef()
     styleDef.setAllFormatFlags()
-    styleDef.strFontFamily = QtGui.QGuiApplication.font().family()
+    styleDef.strFontFamily = self.defaultFontFamily
+    styleDef.fontPointSize = self.defaultFontSize
 
     dlg = StyleDlg(self, styleDef)
 
@@ -73,7 +87,8 @@ class SelectStyleDialog(QtWidgets.QDialog):
       styleDef = dlg.getStyle()
       styleId = self.styleManager.addStyle(styleDef)
 
-      self.addStyle(styleDef.strName, styleId)
+      styleRowNum = self.addStyle(styleDef.strName, styleId)
+      self.ui.styleList.setCurrentRow(styleRowNum)
 
   @QtCore.Slot()
   def on_deleteButton_clicked(self) -> None:
