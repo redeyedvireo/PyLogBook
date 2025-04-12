@@ -459,11 +459,11 @@ class Database:
 
       # If encrypted, decrypt the contentsData
       if self.encrypter.hasPassword():
-        logEntry.content = self.encrypter.decrypt(bytes(contentData))
-        logEntry.setTagsFromString(self.encrypter.decrypt(bytes(tagsData)))
+        logEntry.content = self.encrypter.decrypt(unknownToBytes(contentData))
+        logEntry.setTagsFromString(self.encrypter.decrypt(unknownToBytes(tagsData)))
       else:
-        logEntry.content = bytes(contentData).decode()
-        logEntry.setTagsFromString(unknownToBytes(tagsData).decode())
+        logEntry.content = unknownToBytes(contentData).decode('utf-8')
+        logEntry.setTagsFromString(unknownToBytes(tagsData).decode('utf-8'))
 
       logEntry.entryId = entryId
       logEntry.lastModifiedDateTime = lastModifiedDate

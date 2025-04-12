@@ -1,7 +1,10 @@
 import hashlib
 import base64
 import os
+import logging
+import cryptography
 from cryptography.fernet import Fernet
+import cryptography.fernet
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
@@ -71,6 +74,15 @@ class Encrypter():
     if self.fernet is None:
       raise Exception('Decrypt: fernet not initialized.')
 
-    decryptedContentsBytes = self.fernet.decrypt(encryptedContents)
-    decryptedContentsStr = decryptedContentsBytes.decode()
+    try:
+      decryptedContentsBytes = self.fernet.decrypt(encryptedContents)
+      decryptedContentsStr = decryptedContentsBytes.decode()
+
+    except TypeError as e:
+      logging.error(f'[Encrypter.decrypt] Decryption error: {e}')
+      return ''
+    except cryptography.fernet.InvalidToken as e:
+      logging.error(f'[Encrypter.decrypt] Invalid token: {e}')
+      return ''
+
     return decryptedContentsStr

@@ -39,7 +39,15 @@ def bytesToQByteArray(data: bytes) -> QtCore.QByteArray:
   return QtCore.QByteArray(data)
 
 def qByteArrayToBytes(data: QtCore.QByteArray) -> bytes:
-  return bytes(data, 'utf-8')
+  if (type(data) is str):
+    return bytes(data)
+  elif isinstance(data, QtCore.QByteArray):
+    return data.data()    # The docs say this returns a string, but it actually returns bytes
+  elif isinstance(data, bytes):
+    return data
+  else:
+    # Unknown data type
+    return data
 
 def unknownToBytes(data: Any) -> bytes:
   if data is not None:
