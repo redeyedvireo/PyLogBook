@@ -35,9 +35,13 @@ class LogBrowser(QtWidgets.QWidget):
     if numEntriesPerPage != self.numEntriesPerPage:
       self.numEntriesPerPage = numEntriesPerPage
 
+      self.ui.pageSpin.setMaximum(self.getNumPages())
+
       # Go back to page 0
-      self.currentPageNum = 0
-      self.displayCurrentBrowserPage()
+      self.gotoPage(0)
+
+      self.updateNumberOfPagesLabel()
+      self.updatePageButtons(self.getCurrentPageAsOneBasedNumber())
 
   def displayCurrentBrowserPage(self):
     if self.db is None:
@@ -75,8 +79,10 @@ class LogBrowser(QtWidgets.QWidget):
 
       self.ui.pageSpin.setMaximum(self.getNumPages())
 
-      self.displayCurrentBrowserPage()
       self.updateNumberOfPagesLabel()
+      self.onEndButtonClicked()       # Go to the last page (we're assuming that the date being added is the latest date)
+      self.displayCurrentBrowserPage()
+      self.updatePageButtons(self.getCurrentPageAsOneBasedNumber())
 
   def addDates(self, dates: list[datetime.date]):
     for date in dates:
@@ -89,6 +95,7 @@ class LogBrowser(QtWidgets.QWidget):
 
     self.displayCurrentBrowserPage()
     self.updateNumberOfPagesLabel()
+    self.updatePageButtons(self.getCurrentPageAsOneBasedNumber())
 
   def setDateList(self, dateList: list[datetime.date]) -> None:
     self.logDates = dateList
@@ -101,6 +108,8 @@ class LogBrowser(QtWidgets.QWidget):
       self.ui.pageSpin.setMaximum(self.getNumPages())
 
     self.updateNumberOfPagesLabel()
+
+    self.updatePageButtons(self.getCurrentPageAsOneBasedNumber())
 
   def getNumPages(self):
     numPages = len(self.logDates) / self.numEntriesPerPage
@@ -153,10 +162,13 @@ class LogBrowser(QtWidgets.QWidget):
         oneBasedPageNum = pageNum + 1
         self.ui.pageSpin.setValue(oneBasedPageNum)
 
-        self.ui.nextButton.setEnabled(oneBasedPageNum < self.getNumPages())
-        self.ui.endButton.setEnabled(oneBasedPageNum < self.getNumPages())
-        self.ui.previousButton.setEnabled(oneBasedPageNum > 1)
-        self.ui.beginButton.setEnabled(oneBasedPageNum > 1)
+        self.updatePageButtons(oneBasedPageNum)
+
+  def updatePageButtons(self, oneBasedPageNumber: int):
+    self.ui.nextButton.setEnabled(oneBasedPageNumber < self.getNumPages() and self.getNumPages() > 1)
+    self.ui.endButton.setEnabled(oneBasedPageNumber < self.getNumPages() and self.getNumPages() > 1)
+    self.ui.previousButton.setEnabled(oneBasedPageNumber > 1 and self.getNumPages() > 1)
+    self.ui.beginButton.setEnabled(oneBasedPageNumber > 1 and self.getNumPages() > 1)
 
   def getCurrentPageAsOneBasedNumber(self) -> int:
     return self.currentPageNum + 1
