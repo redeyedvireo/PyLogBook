@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="/PyLogBook">
+    <file>Resources/Search.png</file>
     <file>Resources/first-page.png</file>
     <file>Resources/last-page.png</file>
     <file>Resources/next-page.png</file>

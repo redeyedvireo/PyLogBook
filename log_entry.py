@@ -1,3 +1,4 @@
+from PySide6 import QtGui
 from constants import kTempItemId
 import datetime
 import time
@@ -42,9 +43,18 @@ class LogEntry():
   def entryDateAsString(self) -> str:
     if self.isEntryIdValid():
       date = julianDayToDate(self.entryId)
-      return date.strftime('%B %d, %Y')
+      return date.strftime('%B %d, %Y') if date is not None else ''
     else:
       return ''
+
+  def containsString(self, searchString: str) -> bool:
+    searchString = searchString.lower()
+
+    textDoc = QtGui.QTextDocument()
+    textDoc.setHtml(self.content)
+    textContents = textDoc.toPlainText().lower()
+
+    return searchString in textContents or searchString in self.tagsAsString().lower()
 
   def numModificationsAsString(self) -> str:
     return str(self.numModifications)

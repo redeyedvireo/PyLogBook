@@ -5,7 +5,7 @@ import datetime
 
 from encrypter import Encrypter
 from log_entry import LogEntry
-from utility import bytesToQByteArray, dateToJulianDay, julianDayToDate, qByteArrayToBytes, unknownToBytes
+from utility import bytesToQByteArray, dateToJulianDay, julianDayToDate, qByteArrayToBytes, toQByteArray, unknownToBytes
 
 from constants import kTempItemId, kHashedPwFieldName, kSaltFieldName
 
@@ -74,7 +74,7 @@ class Database:
 
   def createGlobalsTable(self):
     """ Creates the globals table. """
-    queryObj = QtSql.QSqlQuery(self.db)
+    queryObj = QtSql.QSqlQuery()
 
     createStr = "create table globals ("
     createStr += "key text UNIQUE, "
@@ -96,7 +96,7 @@ class Database:
 
   def createLogsTable(self):
     """ Creates the Logs table. """
-    queryObj = QtSql.QSqlQuery(self.db)
+    queryObj = QtSql.QSqlQuery()
 
     createStr = "create table logs ("
     createStr += "entryid integer UNIQUE, "       # Unique ID - this is the Julian Day (ie, date) for which this log entry was created
@@ -118,7 +118,7 @@ class Database:
 
   def getGlobalValue(self, key: str) -> int | str | bytes | None:
     """ Returns the value of a 'global value' for the given key. """
-    queryObj = QtSql.QSqlQuery(self.db)
+    queryObj = QtSql.QSqlQuery()
     queryObj.prepare("select datatype from globals where key = ?")
     queryObj.bindValue(0, key)
 
@@ -175,7 +175,7 @@ class Database:
       value = queryObj.value(valueField)
 
       if isinstance(value, QtCore.QByteArray):
-        value = bytes(value)
+        value = qByteArrayToBytes(value)
 
       return value
 
@@ -183,7 +183,7 @@ class Database:
     """ Sets the value of the given key to the given value. """
 
     # See if the key exists
-    queryObj = QtSql.QSqlQuery(self.db)
+    queryObj = QtSql.QSqlQuery()
     queryObj.prepare("select datatype from globals where key = ?")
     queryObj.bindValue(0, key)
 
@@ -196,6 +196,8 @@ class Database:
       self.reportError("Error when attempting to determine if a global value exists: {}".format(sqlErr.text()))
       return
 
+    valueToStore = value
+
     if queryObj.next():
       # Key exists; update its value
       if isinstance(value, int):
@@ -206,14 +208,13 @@ class Database:
         createStr = "update globals set blobval=? where key=?"
 
         # Must convert to a QByteArray
-        value = bytesToQByteArray(value)
+        valueToStore = toQByteArray(value)
       else:
         self.reportError("setGlobalValue: invalid data type")
         return
 
       queryObj.prepare(createStr)
-
-      queryObj.addBindValue(value)
+      queryObj.addBindValue(valueToStore)
       queryObj.addBindValue(key)
     else:
       if isinstance(value, int):
@@ -227,7 +228,8 @@ class Database:
         dataType = kDataTypeBlob
 
         # Must convert to a QByteArray
-        value = bytesToQByteArray(value)
+        valueAsBytes = toQByteArray(value)
+        valueToStore = valueAsBytes
       else:
         self.reportError("setGlobalValue: invalid data type")
         return
@@ -236,7 +238,7 @@ class Database:
 
       queryObj.addBindValue(key)
       queryObj.addBindValue(dataType)
-      queryObj.addBindValue(value)
+      queryObj.addBindValue(valueToStore)
 
     queryObj.exec()
 
@@ -249,7 +251,7 @@ class Database:
 
   def globalValueExists(self, key):
     """ Checks if a global value exists. """
-    queryObj = QtSql.QSqlQuery(self.db)
+    queryObj = QtSql.QSqlQuery()
     queryObj.prepare("select datatype from globals where key=?")
     queryObj.addBindValue(key)
 
@@ -297,7 +299,7 @@ class Database:
 
   def getEntryDates(self) -> list[datetime.date]:
     """ Returns a list of dates for which log entries exist. """
-    queryObj = QtSql.QSqlQuery(self.db)
+    queryObj = QtSql.QSqlQuery()
     queryStr = "select entryid from logs"
     queryObj.prepare(queryStr)
 
@@ -315,7 +317,8 @@ class Database:
     while queryObj.next():
       julianDay = int(queryObj.value(entryField))
       date = julianDayToDate(julianDay)
-      dateList.append(date)
+      if date is not None:
+        dateList.append(date)
 
     return dateList
 
@@ -324,7 +327,7 @@ class Database:
     return self.entryExists(entryId)
 
   def entryExists(self, entryId: int) -> bool:
-    queryObj = QtSql.QSqlQuery(self.db)
+    queryObj = QtSql.QSqlQuery()
     queryStr = "select lastmodifieddate from logs where entryid=?"
     queryObj.prepare(queryStr)
     queryObj.addBindValue(entryId)
@@ -343,7 +346,7 @@ class Database:
     """ Adds a new log to the database.  Returns the entryId of the entry, or None
         if there was an error.
     """
-    queryObj = QtSql.QSqlQuery(self.db)
+    queryObj = QtSql.QSqlQuery()
 
     entryId = dateToJulianDay(entryDate)
 
@@ -412,7 +415,7 @@ class Database:
       encryptedData = bytesToQByteArray(encryptedData)
       encryptedTags = bytesToQByteArray(encryptedTags)
 
-      queryObj = QtSql.QSqlQuery(self.db)
+      queryObj = QtSql.QSqlQuery()
 
       queryObj.prepare('update logs set contents=?, tags=?, lastmodifieddate=?, nummodifications=? where entryid=?')
 
@@ -436,7 +439,7 @@ class Database:
       return False
 
   def getLogEntry(self, entryId: int) -> LogEntry | None:
-    queryObj = QtSql.QSqlQuery(self.db)
+    queryObj = QtSql.QSqlQuery()
     queryObj.prepare("select contents, tags, lastmodifieddate, nummodifications from logs where entryid=?")
 
     queryObj.addBindValue(entryId)
@@ -475,7 +478,7 @@ class Database:
       return None
 
   def numLogEntries(self) -> int:
-    queryObj = QtSql.QSqlQuery(self.db)
+    queryObj = QtSql.QSqlQuery()
     queryObj.prepare("select count(*)")
 
     queryObj.exec()

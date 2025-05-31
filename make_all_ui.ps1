@@ -6,3 +6,4 @@ pyside6-uic .\SetPasswordDialog.ui -o ui_SetPasswordDialog.py
 pyside6-uic .\prefs_dialog.ui -o ui_prefs_dialog.py
 pyside6-uic .\select_style_dlg.ui -o ui_select_style_dlg.py
 pyside6-uic .\style_dlg.ui -o ui_style_dlg.py
+pyside6-uic search_dialog.ui -o ui_search_dialog.py

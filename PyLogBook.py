@@ -18,6 +18,7 @@ from constants import kTempItemId, errNoDateFound, kPrefsFileName
 from log_entry import LogEntry
 from preferences import Preferences
 from prefs_dialog import PrefsDialog
+from search_dialog import SearchDialog
 from utility import dateToJulianDay, formatDate, formatDateTime, julianDayToDate
 
 from xml_file import XmlHandler
@@ -495,6 +496,12 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
     if prefsDialog.exec() == QtWidgets.QDialog.DialogCode.Accepted:
       self.prefs.writePrefsFile()
       self.ui.logBrowser.setNumEntriesPerPage(self.prefs.getNumEntriesPerPage())
+
+  @QtCore.Slot()
+  def on_actionSearch_triggered(self):
+    dlg = SearchDialog(self.db, self)
+    dlg.dateSelectedSignal.connect(self.onDisplayLogEntryScrollBrowser)
+    dlg.show()
 
   @QtCore.Slot()
   def on_actionAbout_Qt_triggered(self):

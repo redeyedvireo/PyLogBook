@@ -50,6 +50,12 @@ class Ui_PyLogBookWindow(object):
         self.actionExport_XML.setObjectName(u"actionExport_XML")
         self.actionImport_XML = QAction(PyLogBookWindow)
         self.actionImport_XML.setObjectName(u"actionImport_XML")
+        self.actionSearch = QAction(PyLogBookWindow)
+        self.actionSearch.setObjectName(u"actionSearch")
+        icon = QIcon()
+        icon.addFile(u":/PyLogBook/Resources/Search.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.actionSearch.setIcon(icon)
+        self.actionSearch.setMenuRole(QAction.MenuRole.NoRole)
         self.centralWidget = QWidget(PyLogBookWindow)
         self.centralWidget.setObjectName(u"centralWidget")
         self.horizontalLayout_3 = QHBoxLayout(self.centralWidget)
@@ -232,9 +238,12 @@ class Ui_PyLogBookWindow(object):
         self.menuHelp.setObjectName(u"menuHelp")
         self.menuSettings = QMenu(self.menuBar)
         self.menuSettings.setObjectName(u"menuSettings")
+        self.menuSearch = QMenu(self.menuBar)
+        self.menuSearch.setObjectName(u"menuSearch")
         PyLogBookWindow.setMenuBar(self.menuBar)
 
         self.menuBar.addAction(self.menuFile.menuAction())
+        self.menuBar.addAction(self.menuSearch.menuAction())
         self.menuBar.addAction(self.menuSettings.menuAction())
         self.menuBar.addAction(self.menuHelp.menuAction())
         self.menuFile.addAction(self.actionNew_Log_File)
@@ -248,6 +257,7 @@ class Ui_PyLogBookWindow(object):
         self.menuHelp.addAction(self.actionAbout_PyLogBook)
         self.menuHelp.addAction(self.actionAbout_Qt)
         self.menuSettings.addAction(self.actionPreferences)
+        self.menuSearch.addAction(self.actionSearch)
 
         self.retranslateUi(PyLogBookWindow)
 
@@ -265,6 +275,7 @@ class Ui_PyLogBookWindow(object):
         self.actionPreferences.setText(QCoreApplication.translate("PyLogBookWindow", u"Preferences...", None))
         self.actionExport_XML.setText(QCoreApplication.translate("PyLogBookWindow", u"Export XML...", None))
         self.actionImport_XML.setText(QCoreApplication.translate("PyLogBookWindow", u"Import XML...", None))
+        self.actionSearch.setText(QCoreApplication.translate("PyLogBookWindow", u"Search...", None))
         self.label_2.setText(QCoreApplication.translate("PyLogBookWindow", u"Log Browser", None))
         self.label_3.setText(QCoreApplication.translate("PyLogBookWindow", u"Log Editor", None))
         self.logDateLabel_2.setText(QCoreApplication.translate("PyLogBookWindow", u"Log Entry:", None))
@@ -280,5 +291,6 @@ class Ui_PyLogBookWindow(object):
         self.menuFile.setTitle(QCoreApplication.translate("PyLogBookWindow", u"File", None))
         self.menuHelp.setTitle(QCoreApplication.translate("PyLogBookWindow", u"Help", None))
         self.menuSettings.setTitle(QCoreApplication.translate("PyLogBookWindow", u"Settings", None))
+        self.menuSearch.setTitle(QCoreApplication.translate("PyLogBookWindow", u"Search", None))
     # retranslateUi
 

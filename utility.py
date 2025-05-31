@@ -38,6 +38,16 @@ def qDateToPyDate(qDate: QtCore.QDate) -> datetime.date:
 def bytesToQByteArray(data: bytes) -> QtCore.QByteArray:
   return QtCore.QByteArray(data)
 
+def toQByteArray(data: int | str | bytes) -> QtCore.QByteArray:
+  if type(data) is int:
+    return QtCore.QByteArray(data.to_bytes(2, 'little'))
+  elif type(data) is str:
+    return QtCore.QByteArray(bytes(data, 'utf-8'))
+  elif type(data) is bytes:
+    return QtCore.QByteArray(data)
+  else:
+    return QtCore.QByteArray()
+
 def qByteArrayToBytes(data: QtCore.QByteArray) -> bytes:
   if (type(data) is str):
     return bytes(data)

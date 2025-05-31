@@ -261,7 +261,14 @@
     </property>
     <addaction name="actionPreferences"/>
    </widget>
+   <widget class="QMenu" name="menuSearch">
+    <property name="title">
+     <string>Search</string>
+    </property>
+    <addaction name="actionSearch"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuSearch"/>
    <addaction name="menuSettings"/>
    <addaction name="menuHelp"/>
   </widget>
@@ -310,19 +317,31 @@
     <string>Import XML...</string>
    </property>
   </action>
+  <action name="actionSearch">
+   <property name="icon">
+    <iconset resource="PyLogBook.qrc">
+     <normaloff>:/PyLogBook/Resources/Search.png</normaloff>:/PyLogBook/Resources/Search.png</iconset>
+   </property>
+   <property name="text">
+    <string>Search...</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
+  <customwidget>
+   <class>CCalendar</class>
+   <extends>QCalendarWidget</extends>
+   <header location="global">ccalendar</header>
+  </customwidget>
   <customwidget>
    <class>RichTextEditWidget</class>
    <extends>QWidget</extends>
    <header>RichTextEdit</header>
    <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>CCalendar</class>
-   <extends>QCalendarWidget</extends>
-   <header>ccalendar</header>
   </customwidget>
   <customwidget>
    <class>LogBrowser</class>
