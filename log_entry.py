@@ -13,6 +13,12 @@ class LogEntry():
     self.lastModifiedDateTime: datetime.datetime | None = None
     self.numModifications = 0
 
+  @property
+  def contentAsPlainText(self) -> str:
+    textDoc = QtGui.QTextDocument()
+    textDoc.setHtml(self.content)
+    return textDoc.toPlainText()
+
   def isEntryIdValid(self) -> bool:
     return self.entryId > 0
 

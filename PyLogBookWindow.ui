@@ -245,6 +245,7 @@
     <addaction name="separator"/>
     <addaction name="actionImport_XML"/>
     <addaction name="actionExport_XML"/>
+    <addaction name="actionExport_Text"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
@@ -324,6 +325,14 @@
    </property>
    <property name="text">
     <string>Search...</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionExport_Text">
+   <property name="text">
+    <string>Export Text...</string>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>

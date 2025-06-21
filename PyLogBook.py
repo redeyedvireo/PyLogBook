@@ -22,6 +22,7 @@ from search_dialog import SearchDialog
 from utility import dateToJulianDay, formatDate, formatDateTime, julianDayToDate
 
 from xml_file import XmlHandler
+from text_file import TextHandler
 
 kLogFile = 'PyLogBook.log'
 kAppName = 'PyLogBook'
@@ -480,6 +481,29 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
       filepath = filepathTuple[0]
       xmlHandler = XmlHandler(self.db)
       success, numEntriesExported = xmlHandler.exportLogFile(filepath)
+
+      if success:
+        QtWidgets.QMessageBox.information(self, 'Log Export', f'Exported {numEntriesExported} log entries.')
+      else:
+        QtWidgets.QMessageBox.information(self, 'Log Export', 'An error occurred exporting to XML.')
+
+  @QtCore.Slot()
+  def on_actionExport_Text_triggered(self):
+    """ Saves the current log entry as a text file. """
+    if self.checkSaveLog() is False:
+      logging.error('[on_actionSave_Text_triggered] Log update unsuccessful')
+      QtWidgets.QMessageBox.critical(self, kAppName, "There was a problem when saving the log.  The log was not saved.") # type: ignore
+      return
+
+    filepathTuple = QtWidgets.QFileDialog.getSaveFileName(self,
+                                                          "LogBook - Save Log Entry as Text",
+                                                          self.logDir,
+                                                          'Text files (*.txt)')
+
+    if len(filepathTuple[0]) > 0:
+      filepath = filepathTuple[0]
+      textHandler = TextHandler(self.db)
+      success, numEntriesExported = textHandler.exportLogFile(filepath)
 
       if success:
         QtWidgets.QMessageBox.information(self, 'Log Export', f'Exported {numEntriesExported} log entries.')
