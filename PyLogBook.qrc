@@ -19,6 +19,7 @@
     <file>Resources/pencil.png</file>
     <file>Resources/plus.png</file>
     <file>Resources/minus.png</file>
+    <file>Resources/PyLogBook.ico</file>
   </qresource>
   <qresource prefix="/files">
     <file>Resources/logbrowserclass.css</file>
