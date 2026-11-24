@@ -23,6 +23,7 @@ from utility import dateToJulianDay, formatDate, formatDateTime, julianDayToDate
 
 from xml_file import XmlHandler
 from text_file import TextHandler
+from json_file import JsonHandler
 
 kLogFile = 'PyLogBook.log'
 kAppName = 'PyLogBook'
@@ -509,6 +510,29 @@ class PyLogBookWindow(QtWidgets.QMainWindow):
         QtWidgets.QMessageBox.information(self, 'Log Export', f'Exported {numEntriesExported} log entries.')
       else:
         QtWidgets.QMessageBox.information(self, 'Log Export', 'An error occurred exporting to XML.')
+
+  @QtCore.Slot()
+  def on_actionExport_JSON_triggered(self):
+    """ Saves the current log entry as a JSON file. """
+    if self.checkSaveLog() is False:
+      logging.error('[on_actionExport_JSON_triggered] Log update unsuccessful')
+      QtWidgets.QMessageBox.critical(self, kAppName, "There was a problem when saving the log.  The log was not saved.") # type: ignore
+      return
+
+    filepathTuple = QtWidgets.QFileDialog.getSaveFileName(self,
+                                                          "LogBook - Save Log Entry as JSON",
+                                                          self.logDir,
+                                                          'JSON files (*.json)')
+
+    if len(filepathTuple[0]) > 0:
+      filepath = filepathTuple[0]
+      jsonHandler = JsonHandler(self.db)
+      success, numEntriesExported = jsonHandler.exportLogFile(filepath)
+
+      if success:
+        QtWidgets.QMessageBox.information(self, 'Log Export', f'Exported {numEntriesExported} log entries.')
+      else:
+        QtWidgets.QMessageBox.information(self, 'Log Export', 'An error occurred exporting to JSON.')
 
   @QtCore.Slot()
   def on_actionExit_triggered(self):

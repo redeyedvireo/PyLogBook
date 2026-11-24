@@ -250,6 +250,7 @@
     <addaction name="actionImport_XML"/>
     <addaction name="actionExport_XML"/>
     <addaction name="actionExport_Text"/>
+    <addaction name="actionExport_JSON"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
@@ -337,6 +338,14 @@
   <action name="actionExport_Text">
    <property name="text">
     <string>Export Text...</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionExport_JSON">
+   <property name="text">
+    <string>Export JSON...</string>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>
