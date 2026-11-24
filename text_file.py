@@ -8,6 +8,7 @@ from utility import dateToJulianDay
 
 class TextHandler(QtCore.QObject):
   def __init__(self, db: Database) -> None:
+    super().__init__()
     self.db = db
     self.exportCanceled = False
 
@@ -16,7 +17,7 @@ class TextHandler(QtCore.QObject):
     Exports all log entries to a text file.
 
     Args:
-      xmlPath (str): Path to save the exported XML file.
+      textFilePath (str): Path to save the exported text file.
 
     Returns:
       tuple[bool, int]: A tuple containing a boolean indicating success or failure, and the number of entries exported.
